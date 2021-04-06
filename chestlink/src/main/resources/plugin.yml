@@ -3,3 +3,5 @@ version: 1.0
 author: SrSuders
 main: de.srsuders.chestlink.ChestLink
 commands: 
+  link:
+  linkfinish:

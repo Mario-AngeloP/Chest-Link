@@ -23,8 +23,8 @@ public class ConfigReader {
 
 	public JsonObject getMongoDB() {
 		final File f = new File(Const.FOLDER + "mongodb.json");
-		if(!f.exists()) {
-			if(!f.getParentFile().exists()) 
+		if (!f.exists()) {
+			if (!f.getParentFile().exists())
 				f.getParentFile().mkdir();
 			JsonObject cfg = new JsonObject();
 			cfg.addProperty("user", "user");
@@ -40,8 +40,8 @@ public class ConfigReader {
 
 	public JsonObject getSettings() {
 		final File f = new File(Const.FOLDER + "settings.json");
-		if(!f.exists()) {
-			if(!f.getParentFile().exists()) 
+		if (!f.exists()) {
+			if (!f.getParentFile().exists())
 				f.getParentFile().mkdir();
 			JsonObject cfg = new JsonObject();
 			write(f, cfg.toString());
@@ -61,7 +61,7 @@ public class ConfigReader {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private String read(File file) {
 		StringBuilder result = new StringBuilder();
 		try {

@@ -9,4 +9,7 @@ public class Const {
 
 	public static final String FOLDER = "plugins" + File.separator + "ChestLink" + File.separator;
 
+	public static final String PERM_LINK_CHESTS = "chestlink.link";
+	public static final String PERM_ADMIN = "chestlink.admin";
+
 }
