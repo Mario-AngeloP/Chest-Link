@@ -44,17 +44,16 @@ public class PlayerListener implements Listener, Messages {
 			if (e.getClickedBlock() != null & e.getClickedBlock().getType() == Material.CHEST) {
 				final CLPlayer clp = CLHandler.getCLPlayer(p.getUniqueId());
 				final LinkedChestBuilder lcb = clp.getLinkedChestBuilder();
+				if(lcb.getLoc1() != null | lcb.getLoc2() != null) 
+					if(checkLocation(lcb.getLoc1(), lcb.getLoc2(), e.getClickedBlock(), p)) return;
 				if (e.getAction() == Action.LEFT_CLICK_BLOCK) {
-					if (!checkLocation(lcb.getLoc1(), lcb.getLoc2(), e.getClickedBlock(), p)) {
-						lcb.setLoc1(e.getClickedBlock().getLocation());
-						p.sendMessage(prefix + "Du hast diese Kiste als §aerste §eKiste markiert.");
-					}
+					e.setCancelled(true);
+					lcb.setLoc1(e.getClickedBlock().getLocation());
+					p.sendMessage(prefix + "Du hast diese Kiste als §aerste §eKiste markiert.");
 				} else if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
-					if (!checkLocation(lcb.getLoc1(), lcb.getLoc2(), e.getClickedBlock(), p)) {
-						e.setCancelled(true);
-						lcb.setLoc2(e.getClickedBlock().getLocation());
-						p.sendMessage(prefix + "Du hast diese Kiste als §azweite §eKiste markiert.");
-					}
+					e.setCancelled(true);
+					lcb.setLoc2(e.getClickedBlock().getLocation());
+					p.sendMessage(prefix + "Du hast diese Kiste als §azweite §eKiste markiert.");
 				}
 			}
 		} else if(e.getClickedBlock() != null & e.getClickedBlock().getType() == Material.CHEST) {

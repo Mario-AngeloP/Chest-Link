@@ -9,6 +9,7 @@ import org.bukkit.Location;
 public class MCUtils {
 
 	public static boolean equalLocation(final Location loc1, final Location loc2) {
+		if(loc1 == null | loc2 == null) return false;
 		return loc1.getX() == loc2.getX() & loc1.getY() == loc2.getY() & loc1.getZ() == loc2.getZ()
 				& loc1.getWorld().equals(loc2.getWorld());
 	}

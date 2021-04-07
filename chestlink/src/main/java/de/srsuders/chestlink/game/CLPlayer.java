@@ -6,8 +6,11 @@ import java.util.UUID;
 import org.bson.Document;
 import org.bukkit.Location;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 
 import de.srsuders.chestlink.game.object.LinkedChestBuilder;
 import de.srsuders.chestlink.storage.Data;
@@ -20,41 +23,47 @@ public class CLPlayer {
 
 	private final UUID uuid;
 	private LinkedChestBuilder linkedChestBuilder;
-	private BasicDBObject linkedChests = new BasicDBObject();
+	private BasicDBObject linkedChests;
 	private MongoCollection<Document> dbCollection;
 
+	@SuppressWarnings("unchecked")
 	public CLPlayer(final UUID uuid) {
 		this.uuid = uuid;
 		this.linkedChestBuilder = new LinkedChestBuilder();
 		this.dbCollection = Data.getInstance().getMongoDB().getPlayertableCollection();
-
-		final BasicDBObject query = new BasicDBObject();
-		query.put("puuid", uuid.toString());
-
-		linkedChests.put("puuid", uuid.toString());
+		
+		
+		final BasicDBObject query = new BasicDBObject("_id", uuid.toString());
 
 		// Unpraktische Methode, soll aber letztlich dem Spieler linkedChests verteilen
 		// falls vorhanden
-		dbCollection.find(query).iterator().forEachRemaining(doc -> {
-			linkedChests.putAll(doc);
-		});
+		this.linkedChests = new BasicDBObject();
+		linkedChests.put("_id", uuid.toString());
+		MongoCursor<Document> cursor = dbCollection.find(query).cursor();
+		if(!cursor.hasNext()) {
+			dbCollection.insertOne(new Document(linkedChests.toMap()));
+		}
+		while(cursor.hasNext()) {
+			Document doc = cursor.tryNext();
+			this.linkedChests = BasicDBObject.parse(new Gson().fromJson(doc.toJson(), JsonObject.class).toString());
+			return;
+		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public void savePlayer() {
-		final BasicDBObject obj = new BasicDBObject();
-		obj.append("puuid", uuid.toString());
-		dbCollection.find(obj).iterator().forEachRemaining(doc -> {
-			dbCollection.findOneAndReplace(obj, new Document(linkedChests.toMap()));
-			return;
-		});
-		dbCollection.insertOne(new Document(linkedChests.toMap()));
+		final BasicDBObject obj = new BasicDBObject("_id", uuid.toString());
+		dbCollection.findOneAndReplace(obj, Document.parse(linkedChests.toJson()));
 	}
 
 	public void saveLinkedChest() {
 		this.linkedChestBuilder.saveLinkedChestToBasicDBObject(linkedChests);
 		this.linkedChestBuilder.setLoc1(null);
 		this.linkedChestBuilder.setLoc2(null);
+	}
+	
+	public boolean checkFinishable() {
+		
+		return false;
 	}
 
 	public void removeLinkedChest(final Location loc) {

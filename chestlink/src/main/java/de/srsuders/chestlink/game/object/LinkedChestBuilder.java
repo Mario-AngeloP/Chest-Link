@@ -50,6 +50,7 @@ public class LinkedChestBuilder {
 		obj2.put("loc1", MCUtils.locationToString(lc.getLocation()));
 		obj2.put("loc2", MCUtils.locationToString(lc2.getLocation()));
 		obj2.put("time", System.currentTimeMillis());
-		obj.put(UUID.randomUUID().toString().replaceAll("-", ""), obj2);
+		obj2.put("state", true);
+		obj.put(UUID.randomUUID().toString().replaceAll("-", "").substring(0, 3), obj2);
 	}
 }
