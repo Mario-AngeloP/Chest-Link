@@ -32,11 +32,8 @@ public class CLPlayer {
 		this.linkedChestBuilder = new LinkedChestBuilder();
 		this.dbCollection = Data.getInstance().getMongoDB().getPlayertableCollection();
 		
-		
 		final BasicDBObject query = new BasicDBObject("_id", uuid.toString());
 
-		// Unpraktische Methode, soll aber letztlich dem Spieler linkedChests verteilen
-		// falls vorhanden
 		this.linkedChests = new BasicDBObject();
 		linkedChests.put("_id", uuid.toString());
 		MongoCursor<Document> cursor = dbCollection.find(query).cursor();

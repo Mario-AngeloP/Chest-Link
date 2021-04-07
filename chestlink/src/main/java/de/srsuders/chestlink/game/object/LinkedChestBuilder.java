@@ -6,6 +6,7 @@ import org.bukkit.Location;
 
 import com.mongodb.BasicDBObject;
 
+import de.srsuders.chestlink.storage.Data;
 import de.srsuders.chestlink.utils.MCUtils;
 
 /**
