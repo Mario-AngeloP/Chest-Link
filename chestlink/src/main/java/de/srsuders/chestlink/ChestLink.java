@@ -2,10 +2,9 @@ package de.srsuders.chestlink;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.UUID;
 
+import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -37,17 +36,17 @@ public class ChestLink extends JavaPlugin {
 	}
 
 	private void readChests() {
-		Data.getInstance().getMongoDB().getSavedChests().find().iterator().forEachRemaining(doc -> {
+		final Document doc = Data.getInstance().getMongoDB().getSavedChests().find().first();
+		if(doc != null) {
 			final List<LinkedChest> linkedChests = new ArrayList<>();
-			Set<Entry<String, Object>> sets = doc.entrySet();
-			for(Entry<String, Object> map : sets) {
-				final String locationString = map.getKey();
-				final long time = Long.valueOf((String) map.getValue());
-				final Location loc = MCUtils.stringToLocation(locationString);
-				
-				linkedChests.add(new LinkedChest(loc, UUID.fromString(map.getKey()), time));
+			for(Object obj : doc.values()) {
+				String chestString = (String) obj;
+				String[] stringArray = chestString.split(",");
+				final UUID owner = UUID.fromString(stringArray[4]);
+				final Location loc = MCUtils.stringArrayToLocation(stringArray);
+				linkedChests.add(CLHandler.getCLPlayer(owner).getLinkedChestByLocation(loc));
 			}
 			CLHandler.updateList(linkedChests);
-		});;
+		}
 	}
 }

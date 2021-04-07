@@ -18,11 +18,28 @@ public class LinkedChest {
 	private LinkedChest otherChest;
 	private UUID owner;
 	private final long finishedAt;
+	private boolean state = false;
 
 	public LinkedChest(final Location loc, final UUID owner, final long finishedAt) {
 		this.loc = loc;
 		this.owner = owner;
 		this.finishedAt = finishedAt;
+		this.state = true;
+	}
+	
+	public LinkedChest(final Location loc, final UUID owner, final long finishedAt, final boolean state) {
+		this.loc = loc;
+		this.owner = owner;
+		this.finishedAt = finishedAt;
+		this.state = state;
+	}
+	
+	public boolean linked() {
+		return this.state;
+	}
+	
+	public void setState(final boolean state) {
+		this.state = state;
 	}
 
 	public void setOtherChest(final LinkedChest linkedChest) {

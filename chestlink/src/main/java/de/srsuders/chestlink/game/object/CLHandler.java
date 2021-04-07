@@ -31,11 +31,20 @@ public class CLHandler {
 	public static void saveLinkedChests() {
 		final BasicDBObject obj = new BasicDBObject("_id", "007");
 		for(LinkedChest linkedChest : linkedChests) {
-			final BasicDBList list = (BasicDBList) obj.get(linkedChest.getOwner().toString());
-			list.add(new BasicDBObject(MCUtils.locationToString(linkedChest.getLocation()), linkedChest.getFinishedTime()));
-			obj.put(linkedChest.getOwner().toString(), list);
+			BasicDBList list = (BasicDBList) obj.get("007");
+			if(list == null) {
+				list = new BasicDBList();
+				obj.put("007", list);
+			}	
+			
+			list.add(MCUtils.locationToString(linkedChest.getLocation()) + "," + linkedChest.getOwner() + "," + linkedChest.getFinishedTime());
 		}
-		Data.getInstance().getMongoDB().getSavedChests().findOneAndReplace(new BasicDBObject("_id", "007"), Document.parse(obj.toJson()));
+		if(Data.getInstance().getMongoDB().getSavedChests().find().first() != null) {
+			Data.getInstance().getMongoDB().getSavedChests().findOneAndReplace(new BasicDBObject("_id", "007"), Document.parse(obj.toJson()));
+		} else {
+			Data.getInstance().getMongoDB().getSavedChests().insertOne(Document.parse(obj.toJson()));
+		}
+		
 	}
 	
 	/**

@@ -13,6 +13,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 
 import de.srsuders.chestlink.game.object.CLHandler;
+import de.srsuders.chestlink.game.object.LinkedChest;
 import de.srsuders.chestlink.game.object.LinkedChestBuilder;
 import de.srsuders.chestlink.storage.Data;
 import de.srsuders.chestlink.utils.MCUtils;
@@ -46,6 +47,31 @@ public class CLPlayer {
 			this.linkedChests = BasicDBObject.parse(new Gson().fromJson(doc.toJson(), JsonObject.class).toString());
 			return;
 		}
+	}
+	
+	/**
+	 * Diese ist eine Spieler spezifische Abfrage. 
+	 * Hierbei wird null returnt, selbst wenn es sogar ein Linkedchest ist,
+	 * halt nur nich die vom Spieler
+	 * @param loc
+	 * @return
+	 */
+	public LinkedChest getLinkedChestByLocation(final Location loc) {
+		for(String key : linkedChests.keySet()) {
+			final BasicDBObject obj = (BasicDBObject) linkedChests.get(key);
+			final Location loc1 = MCUtils.stringToLocation(obj.getString("loc1"));
+			final Location loc2 = MCUtils.stringToLocation(obj.getString("loc2"));
+			if(MCUtils.equalLocation(loc1, loc) || MCUtils.equalLocation(loc2, loc)) {
+				final long time = obj.getLong("time");
+				final boolean state = obj.getBoolean("state");
+				final LinkedChest lc1 = new LinkedChest(loc1, uuid, time, state);
+				final LinkedChest lc2 = new LinkedChest(loc2, uuid, time, state);
+				lc1.setOtherChest(lc2);
+				lc2.setOtherChest(lc1);
+				return lc1;
+			}
+		}
+		return null;
 	}
 
 	public void savePlayer() {

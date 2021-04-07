@@ -22,4 +22,9 @@ public class MCUtils {
 		final String[] a = string.split(",");
 		return new Location(Bukkit.getWorld(a[0]), Double.valueOf(a[1]), Double.valueOf(a[2]), Double.valueOf(a[3]));
 	}
+	
+	public static Location stringArrayToLocation(final String[] stringArray) {
+		return stringToLocation(stringArray[0] + "," + stringArray[1] + "," + stringArray[2] + "," + stringArray[3]);
+	}
+	
 }

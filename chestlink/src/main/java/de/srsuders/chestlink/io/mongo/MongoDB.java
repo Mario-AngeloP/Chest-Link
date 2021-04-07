@@ -44,8 +44,9 @@ public class MongoDB {
 			this.savedChestCollection = mongoDB.getCollection("savedChests");
 			if (this.savedChestCollection == null) {
 				this.mongoDB.createCollection("savedChests");
-				this.playertableCollection = mongoDB.getCollection("savedChests");
+				this.savedChestCollection = mongoDB.getCollection("savedChests");
 				savedChestCollection.insertOne(new Document("_id", "007"));
+				System.out.println("SavedChests wurde erstellt.");
 			}
 		} catch (Exception exc) {
 			exc.printStackTrace();
