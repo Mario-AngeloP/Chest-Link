@@ -12,6 +12,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 
+import de.srsuders.chestlink.game.object.CLHandler;
 import de.srsuders.chestlink.game.object.LinkedChestBuilder;
 import de.srsuders.chestlink.storage.Data;
 import de.srsuders.chestlink.utils.MCUtils;
@@ -52,23 +53,22 @@ public class CLPlayer {
 		dbCollection.findOneAndReplace(obj, Document.parse(linkedChests.toJson()));
 	}
 
+	/**
+	 * Speichert die gelinkten Kisten local ein, aber nicht in Datenbank
+	 */
 	public void saveLinkedChest() {
-		this.linkedChestBuilder.saveLinkedChestToBasicDBObject(linkedChests);
+		this.linkedChestBuilder.saveLinkedChestToBasicDBObject(linkedChests, this.uuid);
 		this.linkedChestBuilder.setLoc1(null);
 		this.linkedChestBuilder.setLoc2(null);
 	}
 	
-	public boolean checkFinishable() {
-		
-		return false;
-	}
-
 	public void removeLinkedChest(final Location loc) {
 		final BasicDBObject linkedChestsCopy = (BasicDBObject) linkedChests.copy();
 		for (Entry<String, Object> map : linkedChestsCopy.entrySet()) {
 			final String uuid = map.getKey();
 			final BasicDBObject obj = (BasicDBObject) map.getValue();
 			if(MCUtils.equalLocation(loc, MCUtils.stringToLocation(obj.getString("loc1"))) | MCUtils.equalLocation(loc, MCUtils.stringToLocation(obj.getString("loc2")))) { 
+				CLHandler.removeLinkedChest(CLHandler.getLinkedChestByLocation(loc));
 				linkedChests.remove(uuid);
 				return;
 			}
