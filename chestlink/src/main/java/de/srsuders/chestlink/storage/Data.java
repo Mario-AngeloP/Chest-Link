@@ -1,6 +1,7 @@
 package de.srsuders.chestlink.storage;
 
 import de.srsuders.chestlink.ChestLink;
+import de.srsuders.chestlink.game.inventory.LinkFinishInventory;
 import de.srsuders.chestlink.io.config.ConfigReader;
 import de.srsuders.chestlink.io.mongo.MongoDB;
 
@@ -13,10 +14,12 @@ public class Data {
 	private ChestLink chestLink;
 	private final MongoDB mongoDB;
 	private final ConfigReader configReader;
-
+	private final LinkFinishInventory linkFinishInventory;
+	
 	private Data() {
 		this.configReader = new ConfigReader();
 		this.mongoDB = new MongoDB();
+		this.linkFinishInventory = new LinkFinishInventory();
 	}
 
 	public static Data getInstance() {
@@ -28,6 +31,10 @@ public class Data {
 
 	public void setChestLinkInstance(ChestLink chestLinkInstance) {
 		this.chestLink = chestLinkInstance;
+	}
+	
+	public LinkFinishInventory getLinkFinishInventory() {
+		return this.linkFinishInventory;
 	}
 
 	public ConfigReader getConfigReader() {

@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import de.srsuders.chestlink.game.CLPlayer;
 import de.srsuders.chestlink.game.object.CLHandler;
 import de.srsuders.chestlink.storage.Const;
+import de.srsuders.chestlink.storage.Data;
 import de.srsuders.chestlink.storage.Messages;
 
 /**
@@ -34,9 +35,7 @@ public class LinkfinishCMD implements CommandExecutor, Messages {
 					+ "Um welche zu markieren, benutze bitte den Befehl \"/link\", wo dir weitere Schritte erklärt werden.");
 			return false;
 		}
-		clp.saveLinkedChest();
-		sender.sendMessage(prefix + "Du hast die Kisten erfolgreich gelinkt.");
-		//TODO: Inventar öffnen, für Bestätigung
+		p.openInventory(Data.getInstance().getLinkFinishInventory().getInventory());
 		return false;
 	}
 }

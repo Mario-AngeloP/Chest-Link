@@ -7,13 +7,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import de.srsuders.chestlink.game.CLPlayer;
+import de.srsuders.chestlink.game.inventory.LinkFinishInventory;
 import de.srsuders.chestlink.game.object.CLHandler;
 import de.srsuders.chestlink.game.object.LinkedChestBuilder;
+import de.srsuders.chestlink.storage.Data;
 import de.srsuders.chestlink.storage.Items;
 import de.srsuders.chestlink.storage.Messages;
 import de.srsuders.chestlink.utils.MCUtils;
@@ -58,6 +63,34 @@ public class PlayerListener implements Listener, Messages {
 			}
 		} else if(e.getClickedBlock() != null & e.getClickedBlock().getType() == Material.CHEST) {
 			//TODO: Link Herrstellung
+		}
+	}
+	
+	@EventHandler
+	public void onItemDrop(final PlayerDropItemEvent e) {
+		if(e.getItemDrop() != null) {
+			if(e.getItemDrop().getItemStack().equals(Items.markAxe)) e.setCancelled(true);
+		}
+	}
+	
+	@EventHandler
+	public void onInvClick(final InventoryClickEvent e) {
+		final LinkFinishInventory lfInv = Data.getInstance().getLinkFinishInventory();
+		final Player p = (Player) e.getWhoClicked();
+		if(e.getClickedInventory().getName().equals(lfInv.getInventory().getName())) {
+			e.setCancelled(true);
+			if(e.getAction() == null) return;
+			if(e.getCurrentItem().equals(Items.checkField)) {
+				final CLPlayer clp = CLHandler.getCLPlayer(p.getUniqueId());
+				clp.saveLinkedChest();
+				if(p.getInventory().contains(Items.markAxe))
+					p.getInventory().remove(Items.markAxe);
+				p.sendMessage(prefix + "Du hast die Kisten erfolgreich gelinkt.");
+				p.closeInventory();
+			} else if(e.getCurrentItem().equals(Items.denyField)) {
+				p.sendMessage(prefix + "§cDu hast die Bestätigung abgebrochen.");
+				p.closeInventory();
+			}
 		}
 	}
 
