@@ -4,10 +4,6 @@ import java.util.UUID;
 
 import org.bukkit.Location;
 
-import com.mongodb.BasicDBObject;
-
-import de.srsuders.chestlink.utils.MCUtils;
-
 /**
  * Author: SrSuders aka. Mario-Angelo Date: 06.04.2021 Project: chestlink
  */
@@ -40,19 +36,13 @@ public class LinkedChestBuilder {
 	public boolean finished() {
 		return loc1 != null && loc2 != null;
 	}
-
-	public void saveLinkedChestToBasicDBObject(BasicDBObject obj, UUID owner) {
+	
+	public LinkedChest toLinkedChest(final UUID owner) {
 		final long time = System.currentTimeMillis();
-		final LinkedChest lc = new LinkedChest(loc1, owner, time);
+		final LinkedChest lc1 = new LinkedChest(loc1, owner, time);
 		final LinkedChest lc2 = new LinkedChest(loc2, owner, time);
-		lc.setOtherChest(lc2);
-		lc2.setOtherChest(lc);
-		final BasicDBObject obj2 = new BasicDBObject();
-		obj2.put("loc1", MCUtils.locationToString(lc.getLocation()));
-		obj2.put("loc2", MCUtils.locationToString(lc2.getLocation()));
-		obj2.put("time", time);
-		obj2.put("state", true);
-		obj.put(UUID.randomUUID().toString().replaceAll("-", "").substring(0, 3), obj2);
-		CLHandler.addLinkedChest(lc);
+		lc1.setOtherChest(lc2);
+		lc2.setOtherChest(lc1);
+		return lc1;
 	}
 }

@@ -10,7 +10,6 @@ import org.bson.Document;
 import org.bukkit.Location;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
 
 import de.srsuders.chestlink.game.CLPlayer;
 import de.srsuders.chestlink.storage.Data;
@@ -29,22 +28,18 @@ public class CLHandler {
 	}
 	
 	public static void saveLinkedChests() {
-		final BasicDBObject obj = new BasicDBObject("_id", "007");
+		final Document query = new Document("_id", "chests");
+		Document doc = Data.getInstance().getMongoDB().getSavedChests().find(query).first();
+		if(doc == null) {
+			doc = new Document("_id", "chests");
+			Data.getInstance().getMongoDB().getSavedChests().insertOne(query);
+		}
+		final BasicDBList list = new BasicDBList();
 		for(LinkedChest linkedChest : linkedChests) {
-			BasicDBList list = (BasicDBList) obj.get("007");
-			if(list == null) {
-				list = new BasicDBList();
-				obj.put("007", list);
-			}	
-			
-			list.add(MCUtils.locationToString(linkedChest.getLocation()) + "," + linkedChest.getOwner() + "," + linkedChest.getFinishedTime());
+			list.add(MCUtils.locationToString(linkedChest.getLocation()) + "," + linkedChest.getOwner().toString() + "," + linkedChest.getFinishedTime());
 		}
-		if(Data.getInstance().getMongoDB().getSavedChests().find().first() != null) {
-			Data.getInstance().getMongoDB().getSavedChests().findOneAndReplace(new BasicDBObject("_id", "007"), Document.parse(obj.toJson()));
-		} else {
-			Data.getInstance().getMongoDB().getSavedChests().insertOne(Document.parse(obj.toJson()));
-		}
-		
+		doc.put("chests", list);
+		Data.getInstance().getMongoDB().getSavedChests().findOneAndReplace(query, doc);
 	}
 	
 	/**

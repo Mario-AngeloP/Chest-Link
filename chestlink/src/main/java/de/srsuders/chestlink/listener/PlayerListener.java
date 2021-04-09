@@ -31,7 +31,6 @@ public class PlayerListener implements Listener, Messages {
 	public void onJoin(final PlayerJoinEvent e) {
 		final Player p = e.getPlayer();
 		final CLPlayer clp = CLHandler.getCLPlayer(p.getUniqueId());
-
 	}
 	
 	@EventHandler

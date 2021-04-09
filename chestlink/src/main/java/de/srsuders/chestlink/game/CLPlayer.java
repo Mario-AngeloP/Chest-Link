@@ -1,13 +1,12 @@
 package de.srsuders.chestlink.game;
 
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.bson.Document;
 import org.bukkit.Location;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -25,10 +24,9 @@ public class CLPlayer {
 
 	private final UUID uuid;
 	private LinkedChestBuilder linkedChestBuilder;
-	private BasicDBObject linkedChests;
+	private ArrayList<LinkedChest> linkedChests;
 	private MongoCollection<Document> dbCollection;
 
-	@SuppressWarnings("unchecked")
 	public CLPlayer(final UUID uuid) {
 		this.uuid = uuid;
 		this.linkedChestBuilder = new LinkedChestBuilder();
@@ -36,16 +34,21 @@ public class CLPlayer {
 		
 		final BasicDBObject query = new BasicDBObject("_id", uuid.toString());
 
-		this.linkedChests = new BasicDBObject();
-		linkedChests.put("_id", uuid.toString());
+		this.linkedChests = new ArrayList<>();
 		MongoCursor<Document> cursor = dbCollection.find(query).cursor();
 		if(!cursor.hasNext()) {
-			dbCollection.insertOne(new Document(linkedChests.toMap()));
+			dbCollection.insertOne(new Document("_id", uuid.toString()));
 		}
-		while(cursor.hasNext()) {
+		if(cursor.hasNext()) {
 			Document doc = cursor.tryNext();
-			this.linkedChests = BasicDBObject.parse(new Gson().fromJson(doc.toJson(), JsonObject.class).toString());
-			return;
+			for(final String key : doc.keySet()) {
+				if(!key.equals("_id")) {
+					final Document lcDoc = (Document) doc.get(key);
+					final LinkedChest lc = LinkedChest.fromDocument(lcDoc, uuid);
+					this.linkedChests.add(lc);
+					this.linkedChests.add(lc.getLinkedChest());
+				}
+			}
 		}
 	}
 	
@@ -57,13 +60,12 @@ public class CLPlayer {
 	 * @return
 	 */
 	public LinkedChest getLinkedChestByLocation(final Location loc) {
-		for(String key : linkedChests.keySet()) {
-			final BasicDBObject obj = (BasicDBObject) linkedChests.get(key);
-			final Location loc1 = MCUtils.stringToLocation(obj.getString("loc1"));
-			final Location loc2 = MCUtils.stringToLocation(obj.getString("loc2"));
+		for(LinkedChest chest : linkedChests) {
+			final Location loc1 = chest.getLocation();
+			final Location loc2 = chest.getLinkedChest().getLocation();
 			if(MCUtils.equalLocation(loc1, loc) || MCUtils.equalLocation(loc2, loc)) {
-				final long time = obj.getLong("time");
-				final boolean state = obj.getBoolean("state");
+				final long time = chest.getFinishedTime();
+				final boolean state = chest.linked();
 				final LinkedChest lc1 = new LinkedChest(loc1, uuid, time, state);
 				final LinkedChest lc2 = new LinkedChest(loc2, uuid, time, state);
 				lc1.setOtherChest(lc2);
@@ -73,29 +75,50 @@ public class CLPlayer {
 		}
 		return null;
 	}
+	
+	public Document linkedChestsToDocument() {
+		final Document doc = new Document("_id", this.uuid.toString());
+		final List<LinkedChest> usedChests = new ArrayList<>();
+		for(LinkedChest linkedChest : linkedChests) {
+			if(!usedChests.contains(linkedChest)) {
+				final Document lcDoc = new Document();
+				lcDoc.append("loc1", MCUtils.locationToString(linkedChest.getLocation()));
+				lcDoc.append("loc2", MCUtils.locationToString(linkedChest.getLinkedChest().getLocation()));
+				lcDoc.append("time", linkedChest.getFinishedTime());
+				lcDoc.append("state", linkedChest.linked());
+				doc.append(UUID.randomUUID().toString().substring(0, 3), lcDoc);
+				usedChests.add(linkedChest.getLinkedChest());
+			}
+		}
+		return doc;
+	}
 
+	/**
+	 * Trägt den Spieler in die MongoDB ein
+	 */
 	public void savePlayer() {
 		final BasicDBObject obj = new BasicDBObject("_id", uuid.toString());
-		dbCollection.findOneAndReplace(obj, Document.parse(linkedChests.toJson()));
+		dbCollection.findOneAndReplace(obj, linkedChestsToDocument());
 	}
 
 	/**
 	 * Speichert die gelinkten Kisten local ein, aber nicht in Datenbank
 	 */
 	public void saveLinkedChest() {
-		this.linkedChestBuilder.saveLinkedChestToBasicDBObject(linkedChests, this.uuid);
+		final LinkedChest lc = this.linkedChestBuilder.toLinkedChest(uuid);
+		this.linkedChests.add(lc);
+		CLHandler.addLinkedChest(lc);
 		this.linkedChestBuilder.setLoc1(null);
 		this.linkedChestBuilder.setLoc2(null);
 	}
 	
 	public void removeLinkedChest(final Location loc) {
-		final BasicDBObject linkedChestsCopy = (BasicDBObject) linkedChests.copy();
-		for (Entry<String, Object> map : linkedChestsCopy.entrySet()) {
-			final String uuid = map.getKey();
-			final BasicDBObject obj = (BasicDBObject) map.getValue();
-			if(MCUtils.equalLocation(loc, MCUtils.stringToLocation(obj.getString("loc1"))) | MCUtils.equalLocation(loc, MCUtils.stringToLocation(obj.getString("loc2")))) { 
-				CLHandler.removeLinkedChest(CLHandler.getLinkedChestByLocation(loc));
-				linkedChests.remove(uuid);
+		@SuppressWarnings("unchecked")
+		final ArrayList<LinkedChest> linkedChestsCopy = (ArrayList<LinkedChest>) linkedChests.clone();
+		for (LinkedChest lc : linkedChestsCopy) {
+			if(MCUtils.equalLocation(loc, lc.getLocation()) || MCUtils.equalLocation(loc, lc.getLinkedChest().getLocation()) ) {
+				CLHandler.removeLinkedChest(lc);
+				this.linkedChests.remove(lc);
 				return;
 			}
 		}
@@ -105,7 +128,7 @@ public class CLPlayer {
 		return this.linkedChestBuilder;
 	}
 
-	public BasicDBObject getLinkedChests() {
+	public ArrayList<LinkedChest> getLinkedChests() {
 		return this.linkedChests;
 	}
 

@@ -22,13 +22,20 @@ import de.srsuders.chestlink.utils.MCUtils;
  */
 public class ChestLink extends JavaPlugin {
 
+	@SuppressWarnings("deprecation")
 	public void onEnable() {
 		Data.getInstance().setChestLinkInstance(this);
 		Data.getInstance().getMongoDB().connect();
 		Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
 		this.getCommand("link").setExecutor(new LinkCMD());
 		this.getCommand("linkfinish").setExecutor(new LinkfinishCMD());
-		readChests();
+		Bukkit.getScheduler().scheduleAsyncDelayedTask(this, new Runnable() {
+			@Override
+			public void run() {
+				readChests();
+
+			}
+		}, 10L);
 	}
 	
 	public void onDisable() {
@@ -38,13 +45,24 @@ public class ChestLink extends JavaPlugin {
 	private void readChests() {
 		final Document doc = Data.getInstance().getMongoDB().getSavedChests().find().first();
 		if(doc != null) {
+			final List<String> lcList = doc.getList("chests", String.class);
 			final List<LinkedChest> linkedChests = new ArrayList<>();
-			for(Object obj : doc.values()) {
-				String chestString = (String) obj;
-				String[] stringArray = chestString.split(",");
-				final UUID owner = UUID.fromString(stringArray[4]);
-				final Location loc = MCUtils.stringArrayToLocation(stringArray);
-				linkedChests.add(CLHandler.getCLPlayer(owner).getLinkedChestByLocation(loc));
+			LinkedChest lc = null;
+			for(String str : lcList) {
+				String[] strArray = str.split(",");
+				final Location loc = MCUtils.stringArrayToLocation(strArray);
+				final UUID uuid = UUID.fromString(strArray[4]);
+				final Long time = Long.valueOf(strArray[5]);
+				if(lc == null) {
+					lc = new LinkedChest(loc, uuid, time);
+				} else {
+					final LinkedChest lc2 = new LinkedChest(loc, uuid, time);
+					lc.setOtherChest(lc2);
+					lc2.setOtherChest(lc);
+					linkedChests.add(lc);
+					linkedChests.add(lc2);
+					lc = null;
+				}
 			}
 			CLHandler.updateList(linkedChests);
 		}
