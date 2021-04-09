@@ -66,8 +66,8 @@ public class CLPlayer {
 			if(MCUtils.equalLocation(loc1, loc) || MCUtils.equalLocation(loc2, loc)) {
 				final long time = chest.getFinishedTime();
 				final boolean state = chest.linked();
-				final LinkedChest lc1 = new LinkedChest(loc1, uuid, time, state);
-				final LinkedChest lc2 = new LinkedChest(loc2, uuid, time, state);
+				final LinkedChest lc1 = new LinkedChest(loc1, uuid, chest.getID(), time, state);
+				final LinkedChest lc2 = new LinkedChest(loc2, uuid, chest.getID(), time, state);
 				lc1.setOtherChest(lc2);
 				lc2.setOtherChest(lc1);
 				return lc1;
@@ -86,7 +86,8 @@ public class CLPlayer {
 				lcDoc.append("loc2", MCUtils.locationToString(linkedChest.getLinkedChest().getLocation()));
 				lcDoc.append("time", linkedChest.getFinishedTime());
 				lcDoc.append("state", linkedChest.linked());
-				doc.append(UUID.randomUUID().toString().substring(0, 3), lcDoc);
+				lcDoc.append("chest_id", linkedChest.getID());
+				doc.append(linkedChest.getID(), lcDoc);
 				usedChests.add(linkedChest.getLinkedChest());
 			}
 		}
@@ -97,7 +98,7 @@ public class CLPlayer {
 	 * Trägt den Spieler in die MongoDB ein
 	 */
 	public void savePlayer() {
-		final BasicDBObject obj = new BasicDBObject("_id", uuid.toString());
+		final Document obj = new Document("_id", uuid.toString());
 		dbCollection.findOneAndReplace(obj, linkedChestsToDocument());
 	}
 
@@ -110,6 +111,7 @@ public class CLPlayer {
 		CLHandler.addLinkedChest(lc);
 		this.linkedChestBuilder.setLoc1(null);
 		this.linkedChestBuilder.setLoc2(null);
+		lc.getLinkedChestInventory().saveInventory();
 	}
 	
 	public void removeLinkedChest(final Location loc) {

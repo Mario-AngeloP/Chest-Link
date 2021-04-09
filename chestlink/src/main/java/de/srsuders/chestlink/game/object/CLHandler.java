@@ -36,31 +36,10 @@ public class CLHandler {
 		}
 		final BasicDBList list = new BasicDBList();
 		for(LinkedChest linkedChest : linkedChests) {
-			list.add(MCUtils.locationToString(linkedChest.getLocation()) + "," + linkedChest.getOwner().toString() + "," + linkedChest.getFinishedTime());
+			list.add(MCUtils.locationToString(linkedChest.getLocation()) + "," + linkedChest.getOwner().toString() + "," + linkedChest.getFinishedTime() + "," + linkedChest.getID());
 		}
 		doc.put("chests", list);
 		Data.getInstance().getMongoDB().getSavedChests().findOneAndReplace(query, doc);
-	}
-	
-	/**
-	 * Ist diese Kiste bereits verlinkt? Ob es mit einem 
-	 * @return
-	 */
-	public static boolean checkAlreadyLinked(final LinkedChest lc) {
-		if(lc == null) {
-			new NullPointerException("LinkedChest darf nicht null sein.");
-			return true;
-		}
-		boolean linked = false;
-		if(lc.getLocation() != null) 
-			linked = linkedChests.contains(lc);
-		
-		if(linked != true) 
-			if(lc.getLinkedChest() != null) 
-				if(lc.getLinkedChest().getLocation() != null) {
-					linked = linkedChests.contains(lc.getLinkedChest());
-				}
-		return linked;
 	}
 	
 	/**

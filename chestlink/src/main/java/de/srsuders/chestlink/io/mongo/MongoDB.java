@@ -19,6 +19,7 @@ public class MongoDB {
 	private MongoDatabase mongoDB;
 	private MongoCollection<Document> playertableCollection;
 	private MongoCollection<Document> savedChestCollection;
+	private MongoCollection<Document> linkedChestInventoryCollection;
 	
 	@SuppressWarnings("deprecation")
 	public void connect() {
@@ -45,14 +46,23 @@ public class MongoDB {
 			if (this.savedChestCollection == null) {
 				this.mongoDB.createCollection("savedChests");
 				this.savedChestCollection = mongoDB.getCollection("savedChests");
-				savedChestCollection.insertOne(new Document("_id", "007"));
-				System.out.println("SavedChests wurde erstellt.");
+				savedChestCollection.insertOne(new Document("_id", "chests"));
+			}
+			this.linkedChestInventoryCollection = mongoDB.getCollection("linkedChestInventory");
+			if(this.linkedChestInventoryCollection == null) {
+				this.mongoDB.createCollection("linkedChestInventory");
+				this.linkedChestInventoryCollection = mongoDB.getCollection("linkedChestInventory");
+				linkedChestInventoryCollection.insertOne(new Document("_id", "chests"));
 			}
 		} catch (Exception exc) {
 			exc.printStackTrace();
 			System.out.println("Es konnte keine Verbindung zur MongoDB hergestellt werden!");
 			client.close();
 		}
+	}
+	
+	public MongoCollection<Document> getLinkedChestInventoryCollection() {
+		return this.linkedChestInventoryCollection;
 	}
 	
 	public MongoCollection<Document> getSavedChests() {

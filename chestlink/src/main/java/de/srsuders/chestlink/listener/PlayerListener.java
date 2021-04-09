@@ -16,6 +16,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import de.srsuders.chestlink.game.CLPlayer;
 import de.srsuders.chestlink.game.inventory.LinkFinishInventory;
 import de.srsuders.chestlink.game.object.CLHandler;
+import de.srsuders.chestlink.game.object.LinkedChest;
 import de.srsuders.chestlink.game.object.LinkedChestBuilder;
 import de.srsuders.chestlink.storage.Data;
 import de.srsuders.chestlink.storage.Items;
@@ -30,7 +31,7 @@ public class PlayerListener implements Listener, Messages {
 	@EventHandler
 	public void onJoin(final PlayerJoinEvent e) {
 		final Player p = e.getPlayer();
-		final CLPlayer clp = CLHandler.getCLPlayer(p.getUniqueId());
+		CLHandler.getCLPlayer(p.getUniqueId());
 	}
 	
 	@EventHandler
@@ -47,20 +48,38 @@ public class PlayerListener implements Listener, Messages {
 			if (e.getClickedBlock() != null & e.getClickedBlock().getType() == Material.CHEST) {
 				final CLPlayer clp = CLHandler.getCLPlayer(p.getUniqueId());
 				final LinkedChestBuilder lcb = clp.getLinkedChestBuilder();
+				final Location loc = e.getClickedBlock().getLocation();
 				if(lcb.getLoc1() != null | lcb.getLoc2() != null) 
-					if(checkLocation(lcb.getLoc1(), lcb.getLoc2(), e.getClickedBlock(), p)) return;
+					if(checkLocation(lcb.getLoc1(), lcb.getLoc2(), e.getClickedBlock(), p)) {
+						e.setCancelled(true);
+						return;
+					}
+				final LinkedChest lc = CLHandler.getLinkedChestByLocation(loc);
+				if(lc != null) {
+					if(lc.getOwner().equals(p.getUniqueId())) p.sendMessage(prefix + "§cDu hast bereits diese Kiste gelinked.");
+					else p.sendMessage(prefix + "§cDiese Kiste wurde bereits von jemand anderem gelinkt.");
+					return;
+				}
 				if (e.getAction() == Action.LEFT_CLICK_BLOCK) {
 					e.setCancelled(true);
-					lcb.setLoc1(e.getClickedBlock().getLocation());
+					lcb.setLoc1(loc);
 					p.sendMessage(prefix + "Du hast diese Kiste als §aerste §eKiste markiert.");
 				} else if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 					e.setCancelled(true);
-					lcb.setLoc2(e.getClickedBlock().getLocation());
+					lcb.setLoc2(loc);
 					p.sendMessage(prefix + "Du hast diese Kiste als §azweite §eKiste markiert.");
 				}
 			}
 		} else if(e.getClickedBlock() != null & e.getClickedBlock().getType() == Material.CHEST) {
-			//TODO: Link Herrstellung
+			final Location loc = e.getClickedBlock().getLocation();
+			final LinkedChest lc = CLHandler.getLinkedChestByLocation(loc);
+			if(lc == null) return;
+			e.setCancelled(true);
+			if(!lc.getOwner().equals(p.getUniqueId())) {
+				p.sendMessage(prefix + "§cDu kannst nicht die LinkedChest eines anderen Spielers öffnen.");
+				return;
+			}
+			//TODO: Chest öffnen
 		}
 	}
 	

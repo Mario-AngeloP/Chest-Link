@@ -33,7 +33,6 @@ public class ChestLink extends JavaPlugin {
 			@Override
 			public void run() {
 				readChests();
-
 			}
 		}, 10L);
 	}
@@ -54,9 +53,9 @@ public class ChestLink extends JavaPlugin {
 				final UUID uuid = UUID.fromString(strArray[4]);
 				final Long time = Long.valueOf(strArray[5]);
 				if(lc == null) {
-					lc = new LinkedChest(loc, uuid, time);
+					lc = new LinkedChest(loc, uuid, strArray[6], time);
 				} else {
-					final LinkedChest lc2 = new LinkedChest(loc, uuid, time);
+					final LinkedChest lc2 = new LinkedChest(loc, uuid, strArray[6], time);
 					lc.setOtherChest(lc2);
 					lc2.setOtherChest(lc);
 					linkedChests.add(lc);

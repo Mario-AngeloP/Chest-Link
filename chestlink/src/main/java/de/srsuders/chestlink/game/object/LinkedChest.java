@@ -6,6 +6,7 @@ import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
+import de.srsuders.chestlink.game.object.inventory.LinkedChestInventory;
 import de.srsuders.chestlink.utils.MCUtils;
 
 /**
@@ -16,21 +17,31 @@ public class LinkedChest {
 	private Location loc;
 	private LinkedChest otherChest;
 	private UUID owner;
+	private String id;
+	private LinkedChestInventory inv;
 	private final long finishedAt;
 	private boolean state = false;
 
-	public LinkedChest(final Location loc, final UUID owner, final long finishedAt) {
+	public LinkedChest(final Location loc, final UUID owner, final String id, final long finishedAt) {
 		this.loc = loc;
 		this.owner = owner;
+		this.id = id;
 		this.finishedAt = finishedAt;
 		this.state = true;
+		this.inv = new LinkedChestInventory(this);
 	}
 	
-	public LinkedChest(final Location loc, final UUID owner, final long finishedAt, final boolean state) {
+	public LinkedChest(final Location loc, final UUID owner, final String id, final long finishedAt, final boolean state) {
 		this.loc = loc;
 		this.owner = owner;
+		this.id = id;
 		this.finishedAt = finishedAt;
 		this.state = state;
+		this.inv = new LinkedChestInventory(this);
+	}
+	
+	public LinkedChestInventory getLinkedChestInventory() {
+		return this.inv;
 	}
 	
 	public boolean linked() {
@@ -44,6 +55,10 @@ public class LinkedChest {
 
 	public void setOtherChest(final LinkedChest linkedChest) {
 		this.otherChest = linkedChest;
+	}
+	
+	public String getID() {
+		return this.id;
 	}
 	
 	public LinkedChest getLinkedChest() {
@@ -83,8 +98,9 @@ public class LinkedChest {
 				Double.valueOf(sLoc1[2]), Double.valueOf(sLoc1[3]));
 		final Location loc2 = new Location(Bukkit.getWorld(sLoc2[0]), Double.valueOf(sLoc2[1]),
 				Double.valueOf(sLoc2[2]), Double.valueOf(sLoc2[3]));
-		final LinkedChest lc = new LinkedChest(loc1, owner, doc.getLong("time"));
-		final LinkedChest lc2 = new LinkedChest(loc2, owner, doc.getLong("time"));
+		final String id = doc.getString("chest_id");
+		final LinkedChest lc = new LinkedChest(loc1, owner, id, doc.getLong("time"));
+		final LinkedChest lc2 = new LinkedChest(loc2, owner, id, doc.getLong("time"));
 		lc.setOtherChest(lc2);
 		lc2.setOtherChest(lc);
 		return lc;
