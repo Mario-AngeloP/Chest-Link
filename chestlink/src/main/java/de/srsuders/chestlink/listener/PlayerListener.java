@@ -12,6 +12,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.Inventory;
 
 import de.srsuders.chestlink.game.CLPlayer;
 import de.srsuders.chestlink.game.inventory.LinkFinishInventory;
@@ -79,7 +80,8 @@ public class PlayerListener implements Listener, Messages {
 				p.sendMessage(prefix + "§cDu kannst nicht die LinkedChest eines anderen Spielers öffnen.");
 				return;
 			}
-			//TODO: Chest öffnen
+			final Inventory inv = lc.getLinkedChestInventory().getInventory();
+			p.openInventory(inv);
 		}
 	}
 	

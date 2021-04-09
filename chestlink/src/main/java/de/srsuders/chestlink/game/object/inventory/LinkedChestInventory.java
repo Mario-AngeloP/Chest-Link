@@ -1,7 +1,6 @@
 package de.srsuders.chestlink.game.object.inventory;
 
 import java.io.IOException;
-import java.util.Map.Entry;
 
 import org.bson.Document;
 import org.bukkit.Bukkit;
@@ -12,7 +11,6 @@ import com.mongodb.client.MongoCollection;
 
 import de.srsuders.chestlink.game.object.LinkedChest;
 import de.srsuders.chestlink.storage.Data;
-import de.srsuders.chestlink.storage.Items;
 import de.srsuders.chestlink.utils.Serialize;
 
 /**
@@ -35,6 +33,7 @@ public class LinkedChestInventory {
 		if(rs == null) {
 			col.insertOne(query);
 		} else {
+			readInventory();
 		}
 	}
 	
@@ -42,13 +41,37 @@ public class LinkedChestInventory {
 		return this.inventory;
 	}
 	
+	private void readInventory() {
+		final Document query = new Document("_id", linkedChest.getID());
+		final Document rs = col.find(query).first();
+		for(String key : rs.keySet()) {
+			if(!key.equals("_id")) {
+				int i = Integer.valueOf(key.replaceAll("slot", ""));
+				final String value = rs.getString(key);
+				try {
+					inventory.setItem(i, ItemStack.deserialize(Serialize.deserialize(value)));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
 	public void saveInventory() {
 		//TODO abspeichern
 		final Document doc = new Document("_id", linkedChest.getID());
 		for(int i = 0; i<27;i++) {
-			
+			final ItemStack is = inventory.getItem(i);
+			if(is != null) {
+				try {
+					String s = Serialize.serialize(is.serialize());
+					doc.append("slot" + i, s);
+					System.out.println(s);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
-		
 		col.findOneAndReplace(new Document("_id", linkedChest.getID()), doc);
 	}
 	

@@ -63,15 +63,8 @@ public class CLPlayer {
 		for(LinkedChest chest : linkedChests) {
 			final Location loc1 = chest.getLocation();
 			final Location loc2 = chest.getLinkedChest().getLocation();
-			if(MCUtils.equalLocation(loc1, loc) || MCUtils.equalLocation(loc2, loc)) {
-				final long time = chest.getFinishedTime();
-				final boolean state = chest.linked();
-				final LinkedChest lc1 = new LinkedChest(loc1, uuid, chest.getID(), time, state);
-				final LinkedChest lc2 = new LinkedChest(loc2, uuid, chest.getID(), time, state);
-				lc1.setOtherChest(lc2);
-				lc2.setOtherChest(lc1);
-				return lc1;
-			}
+			if(MCUtils.equalLocation(loc1, loc) || MCUtils.equalLocation(loc2, loc)) 
+				return chest;
 		}
 		return null;
 	}

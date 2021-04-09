@@ -22,22 +22,22 @@ public class LinkedChest {
 	private final long finishedAt;
 	private boolean state = false;
 
-	public LinkedChest(final Location loc, final UUID owner, final String id, final long finishedAt) {
+	public LinkedChest(final Location loc, final UUID owner, final String id, final long finishedAt, final LinkedChestInventory lcInv) {
 		this.loc = loc;
 		this.owner = owner;
 		this.id = id;
 		this.finishedAt = finishedAt;
 		this.state = true;
-		this.inv = new LinkedChestInventory(this);
+		this.inv = lcInv == null ? new LinkedChestInventory(this) : lcInv;
 	}
 	
-	public LinkedChest(final Location loc, final UUID owner, final String id, final long finishedAt, final boolean state) {
+	public LinkedChest(final Location loc, final UUID owner, final String id, final long finishedAt, final LinkedChestInventory lcInv, final boolean state) {
 		this.loc = loc;
 		this.owner = owner;
 		this.id = id;
 		this.finishedAt = finishedAt;
 		this.state = state;
-		this.inv = new LinkedChestInventory(this);
+		this.inv = lcInv == null ? new LinkedChestInventory(this) : lcInv;
 	}
 	
 	public LinkedChestInventory getLinkedChestInventory() {
@@ -77,6 +77,10 @@ public class LinkedChest {
 		return this.owner;
 	}
 	
+	public void setLinkedChestInventory(final LinkedChestInventory inv) {
+		this.inv = inv;
+	}
+	
 	/**
 	 * Überprüft die Parameter "owner" und die "location" 
 	 * Wenn es eine Übereinstimmung gibt, gibt er true aus
@@ -99,8 +103,11 @@ public class LinkedChest {
 		final Location loc2 = new Location(Bukkit.getWorld(sLoc2[0]), Double.valueOf(sLoc2[1]),
 				Double.valueOf(sLoc2[2]), Double.valueOf(sLoc2[3]));
 		final String id = doc.getString("chest_id");
-		final LinkedChest lc = new LinkedChest(loc1, owner, id, doc.getLong("time"));
-		final LinkedChest lc2 = new LinkedChest(loc2, owner, id, doc.getLong("time"));
+		final LinkedChest lc = new LinkedChest(loc1, owner, id, doc.getLong("time"), null);
+		final LinkedChest lc2 = new LinkedChest(loc2, owner, id, doc.getLong("time"), null);
+		final LinkedChestInventory lcInv = new LinkedChestInventory(lc);
+		lc.setLinkedChestInventory(lcInv);
+		lc2.setLinkedChestInventory(lcInv);
 		lc.setOtherChest(lc2);
 		lc2.setOtherChest(lc);
 		return lc;

@@ -53,9 +53,9 @@ public class ChestLink extends JavaPlugin {
 				final UUID uuid = UUID.fromString(strArray[4]);
 				final Long time = Long.valueOf(strArray[5]);
 				if(lc == null) {
-					lc = new LinkedChest(loc, uuid, strArray[6], time);
+					lc = new LinkedChest(loc, uuid, strArray[6], time, null);
 				} else {
-					final LinkedChest lc2 = new LinkedChest(loc, uuid, strArray[6], time);
+					final LinkedChest lc2 = new LinkedChest(loc, uuid, strArray[6], time, lc.getLinkedChestInventory());
 					lc.setOtherChest(lc2);
 					lc2.setOtherChest(lc);
 					linkedChests.add(lc);

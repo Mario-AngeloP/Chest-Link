@@ -39,9 +39,9 @@ public class LinkedChestBuilder {
 	
 	public LinkedChest toLinkedChest(final UUID owner) {
 		final long time = System.currentTimeMillis();
-		final String id = UUID.randomUUID().toString().substring(0, 3);
-		final LinkedChest lc1 = new LinkedChest(loc1, owner, id, time);
-		final LinkedChest lc2 = new LinkedChest(loc2, owner, id, time);
+		final String id = UUID.randomUUID().toString().replaceAll("-", "");
+		final LinkedChest lc1 = new LinkedChest(loc1, owner, id, time, null);
+		final LinkedChest lc2 = new LinkedChest(loc2, owner, id, time, lc1.getLinkedChestInventory());
 		lc1.setOtherChest(lc2);
 		lc2.setOtherChest(lc1);
 		return lc1;
