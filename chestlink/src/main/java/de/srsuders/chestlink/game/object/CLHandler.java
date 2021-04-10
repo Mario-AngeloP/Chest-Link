@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.bson.Document;
@@ -20,60 +21,86 @@ import de.srsuders.chestlink.utils.MCUtils;
  */
 public class CLHandler {
 
-	private static final Map<UUID, CLPlayer> players = new HashMap<>();
-	private static final List<LinkedChest> linkedChests = new ArrayList<>();
-	
-	public static void updateList(final List<LinkedChest> updateList) {
-		linkedChests.addAll(updateList);
+	private static final Map<CLPlayer, List<LinkedChest>> linkedChests = new HashMap<>();
+
+	public static void updateList(final Map<CLPlayer, List<LinkedChest>> updateList) {
+		linkedChests.putAll(updateList);
 	}
-	
+
 	public static void saveLinkedChests() {
 		final Document query = new Document("_id", "chests");
 		Document doc = Data.getInstance().getMongoDB().getSavedChests().find(query).first();
-		if(doc == null) {
+		if (doc == null) {
 			doc = new Document("_id", "chests");
 			Data.getInstance().getMongoDB().getSavedChests().insertOne(query);
 		}
-		final BasicDBList list = new BasicDBList();
-		for(LinkedChest linkedChest : linkedChests) {
-			list.add(MCUtils.locationToString(linkedChest.getLocation()) + "," + linkedChest.getOwner().toString() + "," + linkedChest.getFinishedTime() + "," + linkedChest.getID());
+		final BasicDBList targetDoc = new BasicDBList();
+		for (Entry<CLPlayer, List<LinkedChest>> entry : linkedChests.entrySet()) {
+			final Map<String, LinkedChest> usedChests = new HashMap<>();
+			for(LinkedChest linkedChest : entry.getValue()) {
+				if(!usedChests.containsKey(linkedChest.getID())) {
+					usedChests.put(linkedChest.getID(), linkedChest);
+				} else {
+					final LinkedChest lc2 = usedChests.get(linkedChest.getID());
+					targetDoc.add(MCUtils.locationToString(lc2.getLocation()) + "," + lc2.getOwnerUUID().toString() + ","
+							+ lc2.getFinishedTime() + "," + lc2.getID());
+					targetDoc.add(MCUtils.locationToString(linkedChest.getLocation()) + "," + linkedChest.getOwnerUUID().toString() + ","
+							+ linkedChest.getFinishedTime() + "," + linkedChest.getID());
+				}
+			}
 		}
-		doc.put("chests", list);
+		doc.put("chests", targetDoc);
 		Data.getInstance().getMongoDB().getSavedChests().findOneAndReplace(query, doc);
 	}
 	
+	public static List<LinkedChest> getLinkedChestsOfPlayer(final CLPlayer clPlayer) {
+		for(Entry<CLPlayer, List<LinkedChest>> map : linkedChests.entrySet()) {
+			if(map.getKey().equals(clPlayer)) {
+				return map.getValue();
+			}
+		}
+		return null;
+	}
+
 	/**
-	 * Hier kann man eine LinkedChest und deren Owner durch eine location erhalten sowie
-	 * überprüfen ob es überhaupt eine LinkedChest an besagter location ist.
-	 * Returnt null, wenn es keine linkedChest ist
+	 * Hier kann man eine LinkedChest und deren Owner durch eine location erhalten
+	 * sowie überprüfen ob es überhaupt eine LinkedChest an besagter location ist.
+	 * Returnt null, wenn es keine linkedChest ist.
+	 * Nicht performant
 	 * @param loc
 	 * @return
 	 */
 	public static LinkedChest getLinkedChestByLocation(final Location loc) {
-		if(loc.getWorld() == null) {
+		if (loc.getWorld() == null) {
 			new NullPointerException("Die World von der angegeben Location darf nicht null sein!");
 			return null;
 		}
-		for(LinkedChest lc : linkedChests) 
-			if(MCUtils.equalLocation(loc, lc.getLocation())) return lc;
+		for (Entry<CLPlayer, List<LinkedChest>> map : linkedChests.entrySet()) {
+			for(LinkedChest lc : map.getValue()) {
+				System.out.println(lc.getLocation().toString() + " <---- LOCATION");
+				if(lc.getLocation().equals(loc)) return lc;
+			}
+		}
 		return null;
 	}
-	
-	public static void removeLinkedChest(final LinkedChest lc) {
-		if(linkedChests.contains(lc)) linkedChests.remove(lc);
-		if(lc.getLinkedChest() != null) if(linkedChests.contains(lc.getLinkedChest())) linkedChests.remove(lc.getLinkedChest());
-	}
-	
+
 	public static void addLinkedChest(final LinkedChest lc) {
-		linkedChests.add(lc);
-		linkedChests.add(lc.getLinkedChest());
+		final List<LinkedChest> chests = linkedChests.get(lc.getCLPlayer());
+		chests.add(lc);
+		chests.add(lc.getLinkedChest());
+		linkedChests.put(lc.getCLPlayer(), chests);
 	}
 	
 	public static CLPlayer getCLPlayer(final UUID uuid) {
-		if (!players.containsKey(uuid)) {
-			final CLPlayer clp = new CLPlayer(uuid);
-			players.put(uuid, clp);
+		for(Entry<CLPlayer, List<LinkedChest>> map : linkedChests.entrySet()) {
+			System.out.println("KEY: " + map.getKey().getUUID() + " VALUE: " + map.getValue());
+			if(map.getKey().getUUID().equals(uuid)) {
+				return map.getKey();
+			}
 		}
-		return players.get(uuid);
+		final ArrayList<LinkedChest> list = new ArrayList<>();
+		final CLPlayer clp = new CLPlayer(uuid);
+		linkedChests.put(clp, list);
+		return clp;
 	}
 }

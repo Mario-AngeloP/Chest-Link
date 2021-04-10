@@ -15,7 +15,7 @@ public class Data {
 	private final MongoDB mongoDB;
 	private final ConfigReader configReader;
 	private final LinkFinishInventory linkFinishInventory;
-	
+
 	private Data() {
 		this.configReader = new ConfigReader();
 		this.mongoDB = new MongoDB();
@@ -32,7 +32,7 @@ public class Data {
 	public void setChestLinkInstance(ChestLink chestLinkInstance) {
 		this.chestLink = chestLinkInstance;
 	}
-	
+
 	public LinkFinishInventory getLinkFinishInventory() {
 		return this.linkFinishInventory;
 	}

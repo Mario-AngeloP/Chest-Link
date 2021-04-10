@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import org.bukkit.Location;
 
+import de.srsuders.chestlink.game.object.inventory.LinkedChestInventory;
+
 /**
  * Author: SrSuders aka. Mario-Angelo Date: 06.04.2021 Project: chestlink
  */
@@ -32,18 +34,21 @@ public class LinkedChestBuilder {
 	public Location getLoc1() {
 		return loc1;
 	}
-	
+
 	public boolean finished() {
 		return loc1 != null && loc2 != null;
 	}
-	
+
 	public LinkedChest toLinkedChest(final UUID owner) {
 		final long time = System.currentTimeMillis();
 		final String id = UUID.randomUUID().toString().replaceAll("-", "");
-		final LinkedChest lc1 = new LinkedChest(loc1, owner, id, time, null);
-		final LinkedChest lc2 = new LinkedChest(loc2, owner, id, time, lc1.getLinkedChestInventory());
+		final LinkedChest lc1 = new LinkedChest(loc1, owner, id, time);
+		final LinkedChest lc2 = new LinkedChest(loc2, owner, id, time);
 		lc1.setOtherChest(lc2);
 		lc2.setOtherChest(lc1);
+		final LinkedChestInventory lcInv = new LinkedChestInventory(lc1);
+		lc1.setLinkedChestInventory(lcInv);
+		lc2.setLinkedChestInventory(lcInv);
 		return lc1;
 	}
 }

@@ -8,5 +8,5 @@ public interface Messages {
 	public static String prefix = "§aChest§4Link §7| §e";
 	public static String noPermission = prefix + "§cDafür hast du keine Berechtigung!";
 	public static String noConsoleCMD = prefix + "Dieser Spiel ist nur für Spieler gedacht.";
-	
+
 }
