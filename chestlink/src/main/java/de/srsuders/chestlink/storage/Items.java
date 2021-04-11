@@ -18,10 +18,12 @@ public class Items {
 					.build();
 	@SuppressWarnings("deprecation")
 	public static ItemStack checkField = new ItemBuilder(
-			new ItemStack(Material.WOOL, 1, (short) 0, DyeColor.GREEN.getDyeData())).setDisplayName("§aBestätigen")
+			new ItemStack(Material.WOOL, 1, (short) 0, (byte) 5)).setDisplayName("§aBestätigen")
 					.build();
 	@SuppressWarnings("deprecation")
 	public static ItemStack denyField = new ItemBuilder(
-			new ItemStack(Material.WOOL, 1, (short) 0, DyeColor.RED.getDyeData())).setDisplayName("§cAbbrechen")
+			new ItemStack(Material.WOOL, 1, (short) 0, (byte) 6)).setDisplayName("§cAbbrechen")
 					.build();
+	public static ItemStack statusItem = new ItemBuilder(new ItemStack(Material.BOOK, 1)).setDisplayName("§5LinkedChest leser").build();
+	
 }

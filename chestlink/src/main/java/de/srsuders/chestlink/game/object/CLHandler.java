@@ -42,6 +42,7 @@ public class CLHandler {
 					usedChests.put(linkedChest.getID(), linkedChest);
 				} else {
 					final LinkedChest lc2 = usedChests.get(linkedChest.getID());
+					lc2.getLinkedChestInventory().saveInventory();
 					targetDoc.add(MCUtils.locationToString(lc2.getLocation()) + "," + lc2.getOwnerUUID().toString() + ","
 							+ lc2.getFinishedTime() + "," + lc2.getID());
 					targetDoc.add(MCUtils.locationToString(linkedChest.getLocation()) + "," + linkedChest.getOwnerUUID().toString() + ","
@@ -77,11 +78,14 @@ public class CLHandler {
 		}
 		for (Entry<CLPlayer, List<LinkedChest>> map : linkedChests.entrySet()) {
 			for(LinkedChest lc : map.getValue()) {
-				System.out.println(lc.getLocation().toString() + " <---- LOCATION");
 				if(lc.getLocation().equals(loc)) return lc;
 			}
 		}
 		return null;
+	}
+
+	public static Map<CLPlayer, List<LinkedChest>> getLinkedchests() {
+		return linkedChests;
 	}
 
 	public static void addLinkedChest(final LinkedChest lc) {
@@ -93,7 +97,6 @@ public class CLHandler {
 	
 	public static CLPlayer getCLPlayer(final UUID uuid) {
 		for(Entry<CLPlayer, List<LinkedChest>> map : linkedChests.entrySet()) {
-			System.out.println("KEY: " + map.getKey().getUUID() + " VALUE: " + map.getValue());
 			if(map.getKey().getUUID().equals(uuid)) {
 				return map.getKey();
 			}

@@ -1,7 +1,11 @@
 package de.srsuders.chestlink.utils;
 
+import java.text.SimpleDateFormat;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+
+import de.srsuders.chestlink.game.object.LinkedChest;
 
 /**
  * Author: SrSuders aka. Mario-Angelo Date: 07.04.2021 Project: chestlink
@@ -28,4 +32,15 @@ public class MCUtils {
 		return stringToLocation(stringArray[0] + "," + stringArray[1] + "," + stringArray[2] + "," + stringArray[3]);
 	}
 
+	public static String linkedChestToInfoStringFromSelf(final LinkedChest lc) {
+		final Location loc1 = lc.getLocation();
+		final Location loc2 = lc.getLinkedChest().getLocation();
+		String str = "Position 1: ";
+		str += loc1.getWorld().getName() + " X: " + loc1.getBlockX() + " Y: " + loc1.getBlockY() + " Z: " + loc1.getBlockZ() + "\nPosition 2: ";
+		str += loc2.getWorld().getName() + " X: " + loc2.getBlockX() + " Y: " + loc2.getBlockY() + " Z: " + loc2.getBlockZ() + "\nErstellt: ";
+		final SimpleDateFormat date = new SimpleDateFormat("dd-MM-yyyy HH-mm");
+		str += date.format(lc.getFinishedTime()) + "\nVerlinker: ";
+		
+		return str;
+	}
 }

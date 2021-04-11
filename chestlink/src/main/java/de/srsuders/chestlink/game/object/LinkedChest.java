@@ -39,7 +39,8 @@ public class LinkedChest {
 	}
 	
 	public void setLinkedChestInventory(final LinkedChestInventory lcInv) {
-		this.inv = lcInv;
+		if(this.inv == null)
+			this.inv = lcInv;
 	}
 
 	public LinkedChestInventory getLinkedChestInventory() {
@@ -96,5 +97,9 @@ public class LinkedChest {
 			}
 		}
 		return false;
+	}
+	
+	public String toString() {
+		return "loc1: " + getLocation().toString() + " loc2: " + getLinkedChest().getLocation().toString();
 	}
 }

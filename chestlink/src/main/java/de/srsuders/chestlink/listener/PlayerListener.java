@@ -3,6 +3,8 @@ package de.srsuders.chestlink.listener;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,6 +13,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.DoubleChestInventory;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 import de.srsuders.chestlink.game.CLPlayer;
 import de.srsuders.chestlink.game.inventory.LinkFinishInventory;
@@ -38,19 +43,30 @@ public class PlayerListener implements Listener, Messages {
 	@EventHandler
 	public void onInteract(final PlayerInteractEvent e) {
 		final Player p = e.getPlayer();
-		if (p.getItemInHand() != null & p.getItemInHand().equals(Items.markAxe)) {
-			if (e.getClickedBlock() != null & e.getClickedBlock().getType() == Material.CHEST) {
+		final ItemStack is = p.getItemInHand();
+		final Block block = e.getClickedBlock();
+		if(block == null) return;
+		if (checkIfLinkedItem(is)) {
+			if (block.getType() == Material.CHEST) {
+				final BlockState state = block.getState();
+				Chest chest = (Chest) state;
+				final Inventory chestInv = chest.getInventory();
+				if(chestInv instanceof DoubleChestInventory) {
+					p.sendMessage(prefix + "§cDu kannst keine DoubleChest verlinken.");
+					return;
+				}
 				final CLPlayer clp = CLHandler.getCLPlayer(p.getUniqueId());
 				final LinkedChestBuilder lcb = clp.getLinkedChestBuilder();
-				final Location loc = e.getClickedBlock().getLocation();
+				final Location loc = block.getLocation();
 				if (lcb.getLoc1() != null | lcb.getLoc2() != null)
-					if (checkLocation(lcb.getLoc1(), lcb.getLoc2(), e.getClickedBlock(), p)) {
+					if (checkLocation(lcb.getLoc1(), lcb.getLoc2(), block, p)) {
 						e.setCancelled(true);
 						return;
 					}
 				final LinkedChest lc = CLHandler.getLinkedChestByLocation(loc);
 				if (lc != null) {
-					if (lc.getOwnerUUID().equals(p.getUniqueId()))
+					e.setCancelled(true);
+					if (lc.getOwnerUUID().equals(p.getUniqueId())) 
 						p.sendMessage(prefix + "§cDu hast bereits diese Kiste gelinked.");
 					else
 						p.sendMessage(prefix + "§cDiese Kiste wurde bereits von jemand anderem gelinkt.");
@@ -66,22 +82,35 @@ public class PlayerListener implements Listener, Messages {
 					p.sendMessage(prefix + "Du hast diese Kiste als §azweite §eKiste markiert.");
 				}
 			}
-		} else if (e.getClickedBlock() != null & e.getClickedBlock().getType() == Material.CHEST) {
-			final Location loc = e.getClickedBlock().getLocation();
-			final LinkedChest lc = CLHandler.getLinkedChestByLocation(loc);
-			if (lc == null)
-				return;
-			e.setCancelled(true);
-			if (!lc.getOwnerUUID().equals(p.getUniqueId())) {
-				p.sendMessage(prefix + "§cDu kannst nicht die LinkedChest eines anderen Spielers öffnen.");
-				return;
-			}
-			final LinkedChestInventory lcInv = lc.getLinkedChestInventory();
-			if(lcInv == null) {
-				System.out.println("IOST FCKING NULL");
-			}
-			p.openInventory(lcInv.getInventory());
 		}
+		if(block.getType() != Material.CHEST) return;
+		final Location loc = block.getLocation();
+		final LinkedChest lc = CLHandler.getLinkedChestByLocation(loc);
+		if (lc == null)
+			return;
+		if(is != null) {
+			if(is.getItemMeta() == null) return;
+			if(Items.statusItem.getItemMeta().getDisplayName().equals(is.getItemMeta().getDisplayName()) && is.getType() == Items.statusItem.getType()) {
+				if(lc.getOwnerUUID().equals(p.getUniqueId())) {
+					
+				}
+				return;
+			}
+		}
+		e.setCancelled(true);
+		if (!lc.getOwnerUUID().equals(p.getUniqueId())) {
+			p.sendMessage(prefix + "§cDu kannst nicht die LinkedChest eines anderen Spielers öffnen.");
+			return;
+		}
+		final LinkedChestInventory lcInv = lc.getLinkedChestInventory();
+		p.openInventory(lcInv.getInventory());
+	}
+	
+	private boolean checkIfLinkedItem(final ItemStack is) {
+		if(is == null) return false;
+		if(is.getItemMeta() == null) return false;
+		if(is.getType() != Items.markAxe.getType()) return false;
+		return is.getItemMeta().getDisplayName().equals(Items.markAxe.getItemMeta().getDisplayName());
 	}
 
 	@EventHandler

@@ -29,7 +29,6 @@ public class LinkedChestInventory {
 		if (rs == null) {
 			col.insertOne(query);
 		} else {
-			System.out.println(rs.toString());
 			readInventory();
 		}
 	}
@@ -55,7 +54,6 @@ public class LinkedChestInventory {
 		int i = 0;
 		for (ItemStack is : inventory.getContents()) {
 			if (is != null) {
-				System.out.println(is.getItemMeta().getDisplayName() + " <--- NAME");
 				doc.put("slot" + i, Serialize.fromItemStackToDocument(is, i));
 			}
 			i++;

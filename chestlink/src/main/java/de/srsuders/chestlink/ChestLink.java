@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.bson.Document;
@@ -51,11 +50,11 @@ public class ChestLink extends JavaPlugin {
 		if (doc != null) {
 			@SuppressWarnings("unchecked")
 			final ArrayList<Object> list = (ArrayList<Object>) doc.get("chests");
+			if(list == null) return;
 			final ArrayList<LinkedChest> linkedChests = new ArrayList<>();
 			final Map<String, LinkedChest> chestId = new HashMap<>();
 			for (Object obj : list.toArray()) {
 				String value = (String) obj;
-				System.out.println("String: " + value);
 				String[] strArray = value.split(",");
 				final Location loc = MCUtils.stringArrayToLocation(strArray);
 				final UUID uuid = UUID.fromString(strArray[4]);
@@ -72,19 +71,28 @@ public class ChestLink extends JavaPlugin {
 					lc2.setOtherChest(lc);
 					linkedChests.add(lc);
 					linkedChests.add(lc2);
+				} else {
+					chestId.put(id, lc);
 				}
 			}
 			final HashMap<UUID, CLPlayer> playerMap = new HashMap<>();
+			final HashMap<CLPlayer, List<LinkedChest>> lcMap = new HashMap<>();
 			for(LinkedChest lcs : linkedChests) {
+				CLPlayer clp = null;
+				List<LinkedChest> clpLc = null;
 				if(!playerMap.containsKey(lcs.getOwnerUUID())) {
-					playerMap.put(lcs.getOwnerUUID(), new CLPlayer(lcs.getOwnerUUID()));
+					clp = new CLPlayer(lcs.getOwnerUUID());
+					playerMap.put(lcs.getOwnerUUID(), clp);
+					clpLc = new ArrayList<>();
+					lcMap.put(clp, clpLc);
+				} else {
+					clp = playerMap.get(lcs.getOwnerUUID());
+					clpLc = lcMap.get(clp);
 				}
+				clpLc.add(lcs);
+				lcMap.put(clp, clpLc);
 			}
-			final HashMap<CLPlayer, List<LinkedChest>> map = new HashMap<>();
-			for(Entry<UUID, CLPlayer> players : playerMap.entrySet()) {
-				map.put(players.getValue(), players.getValue().getLinkedChests());
-			}
-			CLHandler.updateList(map);;
+			CLHandler.updateList(lcMap);;
 		}
 	}
 }

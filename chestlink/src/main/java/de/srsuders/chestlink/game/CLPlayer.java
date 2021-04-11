@@ -25,7 +25,7 @@ public class CLPlayer {
 	
 	/**
 	 * Diese ist eine Spieler spezifische Abfrage. Hierbei wird null returnt, selbst
-	 * wenn es sogar ein Linkedchest ist, halt nur nich die vom Spieler
+	 * wenn es sogar ein Linkedchest ist, halt nur nicht die vom Spieler
 	 * 
 	 * @param loc
 	 * @return
