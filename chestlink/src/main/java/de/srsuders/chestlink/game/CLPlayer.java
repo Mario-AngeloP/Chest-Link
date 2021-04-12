@@ -1,5 +1,6 @@
 package de.srsuders.chestlink.game;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,7 +23,7 @@ public class CLPlayer {
 		this.uuid = uuid;
 		this.linkedChestBuilder = new LinkedChestBuilder();
 	}
-	
+
 	/**
 	 * Diese ist eine Spieler spezifische Abfrage. Hierbei wird null returnt, selbst
 	 * wenn es sogar ein Linkedchest ist, halt nur nicht die vom Spieler
@@ -58,12 +59,28 @@ public class CLPlayer {
 		return CLHandler.getLinkedChestsOfPlayer(this);
 	}
 
+	/**
+	 * Diese Methode vermeidet, dass LinkedChests mit der gleichen ID zweimal vorkommen
+	 * @return
+	 */
+	public List<LinkedChest> getSingleLinkedChests() {
+		final List<LinkedChest> list = new ArrayList<>();
+		final List<String> usedChests = new ArrayList<>();
+		for(LinkedChest lc : getLinkedChests()) {
+			if(!usedChests.contains(lc.getID())) {
+				list.add(lc);
+				usedChests.add(lc.getID());
+			}
+		}
+		return list;
+	}
+	
 	public UUID getUUID() {
 		return this.uuid;
 	}
-	
+
 	public boolean equals(final Object obj) {
-		if(obj instanceof CLPlayer) {
+		if (obj instanceof CLPlayer) {
 			final CLPlayer clPlayer = (CLPlayer) obj;
 			return clPlayer.getUUID().equals(getUUID());
 		}

@@ -5,3 +5,4 @@ main: de.srsuders.chestlink.ChestLink
 commands: 
   link:
   linkfinish:
+  linkedchests:

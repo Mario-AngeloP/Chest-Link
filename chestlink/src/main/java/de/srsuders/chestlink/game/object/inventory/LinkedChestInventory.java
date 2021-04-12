@@ -33,6 +33,13 @@ public class LinkedChestInventory {
 		}
 	}
 
+	public boolean hasContent() {
+		for(ItemStack is : this.inventory.getContents()) {
+			if(is != null) return true;
+		}
+		return false;
+	}
+	
 	public Inventory getInventory() {
 		return this.inventory;
 	}

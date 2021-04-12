@@ -12,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import de.srsuders.chestlink.command.LinkCMD;
+import de.srsuders.chestlink.command.LinkedChestsCMD;
 import de.srsuders.chestlink.command.LinkfinishCMD;
 import de.srsuders.chestlink.game.CLPlayer;
 import de.srsuders.chestlink.game.object.CLHandler;
@@ -33,6 +34,7 @@ public class ChestLink extends JavaPlugin {
 		Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
 		this.getCommand("link").setExecutor(new LinkCMD());
 		this.getCommand("linkfinish").setExecutor(new LinkfinishCMD());
+		this.getCommand("linkedchests").setExecutor(new LinkedChestsCMD());
 		Bukkit.getScheduler().scheduleAsyncDelayedTask(this, new Runnable() {
 			@Override
 			public void run() {
@@ -50,7 +52,8 @@ public class ChestLink extends JavaPlugin {
 		if (doc != null) {
 			@SuppressWarnings("unchecked")
 			final ArrayList<Object> list = (ArrayList<Object>) doc.get("chests");
-			if(list == null) return;
+			if (list == null)
+				return;
 			final ArrayList<LinkedChest> linkedChests = new ArrayList<>();
 			final Map<String, LinkedChest> chestId = new HashMap<>();
 			for (Object obj : list.toArray()) {
@@ -61,7 +64,7 @@ public class ChestLink extends JavaPlugin {
 				final Long time = Long.valueOf(strArray[5]);
 				final String id = strArray[6];
 				final LinkedChest lc = new LinkedChest(loc, uuid, id, time);
-				if(chestId.containsKey(id)) {
+				if (chestId.containsKey(id)) {
 					final LinkedChestInventory lcInv = new LinkedChestInventory(lc);
 					final LinkedChest lc2 = chestId.get(id);
 					lc.setLinkedChestInventory(lcInv);
@@ -77,10 +80,10 @@ public class ChestLink extends JavaPlugin {
 			}
 			final HashMap<UUID, CLPlayer> playerMap = new HashMap<>();
 			final HashMap<CLPlayer, List<LinkedChest>> lcMap = new HashMap<>();
-			for(LinkedChest lcs : linkedChests) {
+			for (LinkedChest lcs : linkedChests) {
 				CLPlayer clp = null;
 				List<LinkedChest> clpLc = null;
-				if(!playerMap.containsKey(lcs.getOwnerUUID())) {
+				if (!playerMap.containsKey(lcs.getOwnerUUID())) {
 					clp = new CLPlayer(lcs.getOwnerUUID());
 					playerMap.put(lcs.getOwnerUUID(), clp);
 					clpLc = new ArrayList<>();
@@ -92,7 +95,8 @@ public class ChestLink extends JavaPlugin {
 				clpLc.add(lcs);
 				lcMap.put(clp, clpLc);
 			}
-			CLHandler.updateList(lcMap);;
+			CLHandler.updateList(lcMap);
+			;
 		}
 	}
 }

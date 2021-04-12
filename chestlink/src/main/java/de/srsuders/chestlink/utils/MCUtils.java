@@ -6,11 +6,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import de.srsuders.chestlink.game.object.LinkedChest;
+import de.srsuders.chestlink.storage.Messages;
 
 /**
  * Author: SrSuders aka. Mario-Angelo Date: 07.04.2021 Project: chestlink
  */
-public class MCUtils {
+public class MCUtils implements Messages {
 
 	public static boolean equalLocation(final Location loc1, final Location loc2) {
 		if (loc1 == null | loc2 == null)
@@ -35,12 +36,20 @@ public class MCUtils {
 	public static String linkedChestToInfoStringFromSelf(final LinkedChest lc) {
 		final Location loc1 = lc.getLocation();
 		final Location loc2 = lc.getLinkedChest().getLocation();
-		String str = "Position 1: ";
-		str += loc1.getWorld().getName() + " X: " + loc1.getBlockX() + " Y: " + loc1.getBlockY() + " Z: " + loc1.getBlockZ() + "\nPosition 2: ";
-		str += loc2.getWorld().getName() + " X: " + loc2.getBlockX() + " Y: " + loc2.getBlockY() + " Z: " + loc2.getBlockZ() + "\nErstellt: ";
-		final SimpleDateFormat date = new SimpleDateFormat("dd-MM-yyyy HH-mm");
-		str += date.format(lc.getFinishedTime()) + "\nVerlinker: ";
-		
+		String str = "§ePosition 1: ";
+		str += "§a" + loc1.getWorld().getName() + " §eX: §a" + loc1.getBlockX() + " §eY: §a" + loc1.getBlockY()
+				+ " §eZ: §a" + loc1.getBlockZ() + "\n§ePosition 2: §a";
+		str += loc2.getWorld().getName() + " §eX: §a" + loc2.getBlockX() + " §eY: §a" + loc2.getBlockY() + " §eZ:§a "
+				+ loc2.getBlockZ() + "\n§eErstellt: §a";
+		final SimpleDateFormat date = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+		str += date.format(lc.getFinishedTime()) + " \n§eVerlinker: §a" + UUIDUtils.getName(lc.getOwnerUUID()) + " \n§eID: §a" + lc.getID();
+		return str;
+	}
+
+	public static String linkedChestToInfoStringFromOther(final LinkedChest lc) {
+		final SimpleDateFormat date = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+		String str = "§eErstellt:§a " + date.format(lc.getFinishedTime()) + "§e\nVerlinker: §a\n";
+		str += UUIDUtils.getName(lc.getOwnerUUID()) + " \n§eID: §a" + lc.getID();
 		return str;
 	}
 }

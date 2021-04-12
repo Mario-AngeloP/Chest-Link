@@ -30,16 +30,16 @@ public class LinkedChest {
 	}
 
 	public LinkedChest(final Location loc, final UUID owner, final String id, final long finishedAt,
-			 final boolean state) {
+			final boolean state) {
 		this.loc = loc;
 		this.owner = owner;
 		this.id = id;
 		this.finishedAt = finishedAt;
 		this.state = state;
 	}
-	
+
 	public void setLinkedChestInventory(final LinkedChestInventory lcInv) {
-		if(this.inv == null)
+		if (this.inv == null)
 			this.inv = lcInv;
 	}
 
@@ -80,7 +80,7 @@ public class LinkedChest {
 	public UUID getOwnerUUID() {
 		return this.owner;
 	}
-	
+
 	public CLPlayer getCLPlayer() {
 		return CLHandler.getCLPlayer(owner);
 	}
@@ -98,7 +98,7 @@ public class LinkedChest {
 		}
 		return false;
 	}
-	
+
 	public String toString() {
 		return "loc1: " + getLocation().toString() + " loc2: " + getLinkedChest().getLocation().toString();
 	}

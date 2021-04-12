@@ -25,13 +25,25 @@ public class LinkCMD implements CommandExecutor, Messages {
 			sender.sendMessage(noPermission);
 			return false;
 		}
-		if (p.getInventory().contains(Items.markAxe)) {
-			sender.sendMessage(prefix + "§cDu hast bereits den §5Linker §cerhalten.");
-			return false;
+
+		if (args.length == 1) {
+			if (args[0].equalsIgnoreCase("create")) {
+				if (p.getInventory().contains(Items.markAxe)) {
+					sender.sendMessage(prefix + "§cDu hast bereits den §5Linker §cerhalten.");
+					return false;
+				}
+				p.getInventory().addItem(Items.markAxe);
+				sender.sendMessage(prefix + "Du hast den §5Linker §eerhalten.\n"
+						+ "Um das Item zu bedienen, musst du jeweils mit der linken oder rechten Maustaste auf einer Kiste, um somit beide zu verbinden. Um das Vorgehen zu bestätigen, gib bitte: \"/linkfinish\" ein.");
+				return false;
+			} else if (args[0].equalsIgnoreCase("status")) {
+				p.getInventory().addItem(Items.statusItem);
+				sender.sendMessage(prefix
+						+ "Mit diesem Item kannst du überprüfen ob die Kiste eine LinkedChest ist, wenn ja von wem und ggf. wo die andere Kiste ist.");
+				return false;
+			}
 		}
-		p.getInventory().addItem(Items.markAxe);
-		sender.sendMessage(prefix + "Du hast den §5Linker §eerhalten.\n"
-				+ "Um das Item zu bedienen, musst du jeweils mit der linken oder rechten Maustaste auf einer Kiste, um somit beide zu verbinden. Um das Vorgehen zu bestätigen, gib bitte: \"/linkfinish\" ein.");
+		sender.sendMessage(prefix + "§cSyntax Error. Bitte Benutze: /link create/status");
 		return false;
 	}
 }
