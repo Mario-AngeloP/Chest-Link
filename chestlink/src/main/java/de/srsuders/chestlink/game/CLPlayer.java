@@ -6,7 +6,9 @@ import java.util.UUID;
 
 import org.bukkit.Location;
 
-import de.srsuders.chestlink.game.object.CLHandler;
+import com.mongodb.lang.NonNull;
+
+import de.srsuders.chestlink.api.ChestLinkAPI;
 import de.srsuders.chestlink.game.object.LinkedChest;
 import de.srsuders.chestlink.game.object.LinkedChestBuilder;
 import de.srsuders.chestlink.utils.MCUtils;
@@ -19,7 +21,7 @@ public class CLPlayer {
 	private final UUID uuid;
 	private LinkedChestBuilder linkedChestBuilder;
 
-	public CLPlayer(final UUID uuid) {
+	public CLPlayer(@NonNull final UUID uuid) {
 		this.uuid = uuid;
 		this.linkedChestBuilder = new LinkedChestBuilder();
 	}
@@ -31,7 +33,7 @@ public class CLPlayer {
 	 * @param loc
 	 * @return
 	 */
-	public LinkedChest getLinkedChestByLocation(final Location loc) {
+	public LinkedChest getLinkedChestByLocation(@NonNull final Location loc) {
 		for (LinkedChest chest : getLinkedChests()) {
 			final Location loc1 = chest.getLocation();
 			final Location loc2 = chest.getLinkedChest().getLocation();
@@ -46,9 +48,9 @@ public class CLPlayer {
 	 */
 	public void saveLinkedChest() {
 		final LinkedChest lc = this.linkedChestBuilder.toLinkedChest(uuid);
-		CLHandler.addLinkedChest(lc);
-		this.linkedChestBuilder.setLoc1(null);
-		this.linkedChestBuilder.setLoc2(null);
+		ChestLinkAPI.addLinkedChest(lc);
+		this.linkedChestBuilder.setFirstLocation(null);
+		this.linkedChestBuilder.setSecondLocation(null);
 	}
 
 	public LinkedChestBuilder getLinkedChestBuilder() {
@@ -56,7 +58,7 @@ public class CLPlayer {
 	}
 
 	public List<LinkedChest> getLinkedChests() {
-		return CLHandler.getLinkedChestsOfPlayer(this);
+		return ChestLinkAPI.getLinkedChestsOfPlayer(this);
 	}
 
 	/**
@@ -79,7 +81,7 @@ public class CLPlayer {
 		return this.uuid;
 	}
 
-	public boolean equals(final Object obj) {
+	public boolean equals(@NonNull final Object obj) {
 		if (obj instanceof CLPlayer) {
 			final CLPlayer clPlayer = (CLPlayer) obj;
 			return clPlayer.getUUID().equals(getUUID());

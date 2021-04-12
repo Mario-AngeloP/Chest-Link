@@ -11,11 +11,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.srsuders.chestlink.api.ChestLinkAPI;
 import de.srsuders.chestlink.command.LinkCMD;
 import de.srsuders.chestlink.command.LinkedChestsCMD;
 import de.srsuders.chestlink.command.LinkfinishCMD;
 import de.srsuders.chestlink.game.CLPlayer;
-import de.srsuders.chestlink.game.object.CLHandler;
 import de.srsuders.chestlink.game.object.LinkedChest;
 import de.srsuders.chestlink.game.object.inventory.LinkedChestInventory;
 import de.srsuders.chestlink.listener.PlayerListener;
@@ -44,7 +44,7 @@ public class ChestLink extends JavaPlugin {
 	}
 
 	public void onDisable() {
-		CLHandler.saveLinkedChests();
+		ChestLinkAPI.saveLinkedChests();
 	}
 
 	private void readChests() {
@@ -95,7 +95,7 @@ public class ChestLink extends JavaPlugin {
 				clpLc.add(lcs);
 				lcMap.put(clp, clpLc);
 			}
-			CLHandler.updateList(lcMap);
+			ChestLinkAPI.updateLinkedChests(lcMap);
 			;
 		}
 	}

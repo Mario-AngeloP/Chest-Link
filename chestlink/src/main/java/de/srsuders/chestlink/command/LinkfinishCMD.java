@@ -5,8 +5,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import de.srsuders.chestlink.api.ChestLinkAPI;
 import de.srsuders.chestlink.game.CLPlayer;
-import de.srsuders.chestlink.game.object.CLHandler;
 import de.srsuders.chestlink.storage.Const;
 import de.srsuders.chestlink.storage.Data;
 import de.srsuders.chestlink.storage.Messages;
@@ -27,7 +27,7 @@ public class LinkfinishCMD implements CommandExecutor, Messages {
 			sender.sendMessage(noPermission);
 			return false;
 		}
-		final CLPlayer clp = CLHandler.getCLPlayer(p.getUniqueId());
+		final CLPlayer clp = ChestLinkAPI.getCLPlayer(p.getUniqueId());
 		if (!clp.getLinkedChestBuilder().finished()) {
 			sender.sendMessage(prefix + "§cDu musst vorher noch zwei Kisten unabhängig voneinander markieren.\n"
 					+ "Um welche zu markieren, benutze bitte den Befehl \"/link\", wo dir weitere Schritte erklärt werden.");

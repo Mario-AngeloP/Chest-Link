@@ -1,4 +1,4 @@
-package de.srsuders.chestlink.game.object;
+package de.srsuders.chestlink.api;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,20 +13,30 @@ import org.bukkit.Location;
 import com.mongodb.BasicDBList;
 
 import de.srsuders.chestlink.game.CLPlayer;
+import de.srsuders.chestlink.game.object.LinkedChest;
 import de.srsuders.chestlink.storage.Data;
 import de.srsuders.chestlink.utils.MCUtils;
 
 /**
  * Author: SrSuders aka. Mario-Angelo Date: 06.04.2021 Project: chestlink
  */
-public class CLHandler {
+public class ChestLinkAPI {
 
 	private static final Map<CLPlayer, List<LinkedChest>> linkedChests = new HashMap<>();
 
-	public static void updateList(final Map<CLPlayer, List<LinkedChest>> updateList) {
+	/**
+	 * @param updateList
+	 */
+	public static void updateLinkedChests(final Map<CLPlayer, List<LinkedChest>> updateList) {
 		linkedChests.putAll(updateList);
 	}
 
+	/**
+	 * Diese Methode sucht nach der LinkedChest mit der angegeben ID
+	 * Es wird null returnt, wenn es keine LinkedChest mit der ID gibt
+	 * @param id
+	 * @return
+	 */
 	public static LinkedChest getLinkedChestByID(final String id) {
 		for(Entry<CLPlayer, List<LinkedChest>> entry : linkedChests.entrySet()) {
 			final List<LinkedChest> lcs = entry.getValue();
@@ -37,6 +47,10 @@ public class CLHandler {
 		return null;
 	}
 	
+	
+	/**
+	 * Diese Methode speichert alle LinkedChests in die MongoDB ab
+	 */
 	public static void saveLinkedChests() {
 		final Document query = new Document("_id", "chests");
 		Document doc = Data.getInstance().getMongoDB().getSavedChests().find(query).first();
@@ -65,6 +79,11 @@ public class CLHandler {
 		Data.getInstance().getMongoDB().getSavedChests().findOneAndReplace(query, doc);
 	}
 
+	/**
+	 * Diese Methode gibt alle LinkedChests des angegebenen Spielers zurück
+	 * @param clPlayer
+	 * @return
+	 */
 	public static List<LinkedChest> getLinkedChestsOfPlayer(final CLPlayer clPlayer) {
 		for (Entry<CLPlayer, List<LinkedChest>> map : linkedChests.entrySet()) {
 			if (map.getKey().equals(clPlayer)) {
@@ -96,17 +115,31 @@ public class CLHandler {
 		return null;
 	}
 
+	/**
+	 * Es werden alle {@link} mit den zugehörigen Spieler in einer Map wiedergegeben.
+	 * @return
+	 */
 	public static Map<CLPlayer, List<LinkedChest>> getLinkedchests() {
 		return linkedChests;
 	}
 	
-	public static void removeLinkedChest(final CLPlayer clp, final LinkedChest lc) {
+	/**
+	 * Entfernt die LinkedChest aus dem System
+	 * @param clp
+	 * @param lc
+	 */
+	public static void removeLinkedChest(final LinkedChest lc) {
+		System.out.println(lc.toString());
 		final List<LinkedChest> chests = linkedChests.get(lc.getCLPlayer());
 		chests.remove(lc);
 		chests.remove(lc.getLinkedChest());
 		linkedChests.put(lc.getCLPlayer(), chests);
 	}
 
+	/**
+	 * Fügt eine LinkedChest ins System ein
+	 * @param lc
+	 */
 	public static void addLinkedChest(final LinkedChest lc) {
 		final List<LinkedChest> chests = linkedChests.get(lc.getCLPlayer());
 		chests.add(lc);
@@ -114,6 +147,11 @@ public class CLHandler {
 		linkedChests.put(lc.getCLPlayer(), chests);
 	}
 
+	/**
+	 * Gibt den CLPlayer mit der jeweiligen UUID wieder
+	 * @param uuid
+	 * @return
+	 */
 	public static CLPlayer getCLPlayer(final UUID uuid) {
 		for (Entry<CLPlayer, List<LinkedChest>> map : linkedChests.entrySet()) {
 			if (map.getKey().getUUID().equals(uuid)) {

@@ -38,18 +38,6 @@ public class ConfigReader {
 		return gson.fromJson(read(f), JsonObject.class);
 	}
 
-	public JsonObject getSettings() {
-		final File f = new File(Const.FOLDER + "settings.json");
-		if (!f.exists()) {
-			if (!f.getParentFile().exists())
-				f.getParentFile().mkdir();
-			JsonObject cfg = new JsonObject();
-			write(f, cfg.toString());
-			return cfg;
-		}
-		return gson.fromJson(read(f), JsonObject.class);
-	}
-
 	private void write(File file, String content) {
 		try {
 			file.createNewFile();

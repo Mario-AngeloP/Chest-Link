@@ -31,5 +31,6 @@ public class Items {
 	public static ItemStack chest = new ItemBuilder(Material.CHEST).setDisplayName("§7LinkedChest").build();
 	public static ItemStack back = new ItemBuilder(Material.BARRIER).setDisplayName("§eZurück").build();
 	public static ItemStack delete = new ItemBuilder(Material.BUCKET).setDisplayName("§cVerlinkung Aufheben").build();
+	public static ItemStack hack = new ItemBuilder(Material.BLAZE_ROD).setDisplayName("§eHackkey").setLore("§7Mit diesem Item kannst du bei einer gewissen Wahrscheinlichkeit, das Inventar einer anderen LinkedChest übernhemen.").build();
 	
 }

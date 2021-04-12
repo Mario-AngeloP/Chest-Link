@@ -5,8 +5,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import de.srsuders.chestlink.api.ChestLinkAPI;
 import de.srsuders.chestlink.game.CLPlayer;
-import de.srsuders.chestlink.game.object.CLHandler;
 import de.srsuders.chestlink.storage.Data;
 import de.srsuders.chestlink.storage.Messages;
 
@@ -22,7 +22,7 @@ public class LinkedChestsCMD implements CommandExecutor, Messages {
 			return false;
 		}
 		final Player p = (Player) sender;
-		final CLPlayer clp = CLHandler.getCLPlayer(p.getUniqueId());
+		final CLPlayer clp = ChestLinkAPI.getCLPlayer(p.getUniqueId());
 		p.openInventory(Data.getInstance().getOverviewInventoryPlayer().createInventoryForPlayer(clp, 1));
 		return false;
 	}

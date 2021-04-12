@@ -2,6 +2,7 @@ package de.srsuders.chestlink.listener;
 
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -21,9 +22,11 @@ import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import de.srsuders.chestlink.api.ChestLinkAPI;
 import de.srsuders.chestlink.game.CLPlayer;
+import de.srsuders.chestlink.game.event.ChestLinkEvent;
+import de.srsuders.chestlink.game.event.ChestLinkedEvent;
 import de.srsuders.chestlink.game.inventory.LinkFinishInventory;
-import de.srsuders.chestlink.game.object.CLHandler;
 import de.srsuders.chestlink.game.object.LinkedChest;
 import de.srsuders.chestlink.game.object.LinkedChestBuilder;
 import de.srsuders.chestlink.game.object.inventory.LinkedChestInventory;
@@ -41,7 +44,7 @@ public class PlayerListener implements Listener, Messages {
 	@EventHandler
 	public void onJoin(final PlayerJoinEvent e) {
 		final Player p = e.getPlayer();
-		CLHandler.getCLPlayer(p.getUniqueId());
+		ChestLinkAPI.getCLPlayer(p.getUniqueId());
 	}
 	
 	@EventHandler
@@ -49,7 +52,7 @@ public class PlayerListener implements Listener, Messages {
 		final Block b = e.getBlock();
 		if(b != null) {
 			if(b.getType() == Material.CHEST) {
-				final LinkedChest lc = CLHandler.getLinkedChestByLocation(b.getLocation());
+				final LinkedChest lc = ChestLinkAPI.getLinkedChestByLocation(b.getLocation());
 				if(lc != null) {
 					e.setCancelled(true);
 					final Player p = e.getPlayer();
@@ -80,15 +83,15 @@ public class PlayerListener implements Listener, Messages {
 					p.sendMessage(prefix + "§cDu kannst keine DoubleChest verlinken.");
 					return;
 				}
-				final CLPlayer clp = CLHandler.getCLPlayer(p.getUniqueId());
+				final CLPlayer clp = ChestLinkAPI.getCLPlayer(p.getUniqueId());
 				final LinkedChestBuilder lcb = clp.getLinkedChestBuilder();
 				final Location loc = block.getLocation();
-				if (lcb.getLoc1() != null | lcb.getLoc2() != null)
-					if (checkLocation(lcb.getLoc1(), lcb.getLoc2(), block, p)) {
+				if (lcb.getFirstLocation() != null | lcb.getSecondLocation() != null)
+					if (checkLocation(lcb.getFirstLocation(), lcb.getSecondLocation(), block, p)) {
 						e.setCancelled(true);
 						return;
 					}
-				final LinkedChest lc = CLHandler.getLinkedChestByLocation(loc);
+				final LinkedChest lc = ChestLinkAPI.getLinkedChestByLocation(loc);
 				if (lc != null) {
 					e.setCancelled(true);
 					if (lc.getOwnerUUID().equals(p.getUniqueId()))
@@ -99,11 +102,11 @@ public class PlayerListener implements Listener, Messages {
 				}
 				if (e.getAction() == Action.LEFT_CLICK_BLOCK) {
 					e.setCancelled(true);
-					lcb.setLoc1(loc);
+					lcb.setFirstLocation(loc);
 					p.sendMessage(prefix + "Du hast diese Kiste als §aerste §eKiste markiert.");
 				} else if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 					e.setCancelled(true);
-					lcb.setLoc2(loc);
+					lcb.setSecondLocation(loc);
 					p.sendMessage(prefix + "Du hast diese Kiste als §azweite §eKiste markiert.");
 				}
 			}
@@ -112,7 +115,7 @@ public class PlayerListener implements Listener, Messages {
 			return;
 		if(e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
 		final Location loc = block.getLocation();
-		final LinkedChest lc = CLHandler.getLinkedChestByLocation(loc);
+		final LinkedChest lc = ChestLinkAPI.getLinkedChestByLocation(loc);
 		if (lc == null)
 			return;
 		if (is != null) {
@@ -150,7 +153,7 @@ public class PlayerListener implements Listener, Messages {
 	@EventHandler
 	public void onItemDrop(final PlayerDropItemEvent e) {
 		if (e.getItemDrop() != null) {
-			if (e.getItemDrop().getItemStack().equals(Items.markAxe))
+			if (e.getItemDrop().getItemStack().equals(Items.markAxe) || e.getItemDrop().getItemStack().equals(Items.hack))
 				e.setCancelled(true);
 		}
 	}
@@ -168,12 +171,21 @@ public class PlayerListener implements Listener, Messages {
 			e.setCancelled(true);
 			if (e.getClick() == ClickType.LEFT) {
 				if (is.equals(Items.checkField)) {
-					final CLPlayer clp = CLHandler.getCLPlayer(p.getUniqueId());
+					final CLPlayer clp = ChestLinkAPI.getCLPlayer(p.getUniqueId());
+					final ChestLinkEvent chestLinkEvent = new ChestLinkEvent(clp.getLinkedChestBuilder().getFirstLocation(), clp.getLinkedChestBuilder().getSecondLocation(), clp.getUUID());
+					Bukkit.getPluginManager().callEvent(chestLinkEvent);
+					if(chestLinkEvent.isCancelled()) {
+						p.closeInventory();
+						return;
+					}
+					final LinkedChest lc = clp.getLinkedChestBuilder().toLinkedChest(clp.getUUID());
 					clp.saveLinkedChest();
 					if (p.getInventory().contains(Items.markAxe))
 						p.getInventory().remove(Items.markAxe);
 					p.sendMessage(prefix + "Du hast die Kisten erfolgreich gelinkt.");
 					p.closeInventory();
+					final ChestLinkedEvent chestLinkedEvent = new ChestLinkedEvent(lc);
+					Bukkit.getPluginManager().callEvent(chestLinkedEvent);
 				} else if (is.equals(Items.denyField)) {
 					p.sendMessage(prefix + "§cDu hast die Bestätigung abgebrochen.");
 					p.closeInventory();
@@ -187,11 +199,11 @@ public class PlayerListener implements Listener, Messages {
 							.substring(e.getClickedInventory().getName().length() - 1);
 					final int i = Integer.valueOf(nr);
 					p.openInventory(Data.getInstance().getOverviewInventoryPlayer()
-							.createInventoryForPlayer(CLHandler.getCLPlayer(p.getUniqueId()), is.equals(Items.nextPage) ? i+1 : i-1));
+							.createInventoryForPlayer(ChestLinkAPI.getCLPlayer(p.getUniqueId()), is.equals(Items.nextPage) ? i+1 : i-1));
 				} else if(is.getType() == Material.CHEST) {
 					final String name = is.getItemMeta().getDisplayName().substring(2);
 					final Integer nr = Integer.valueOf(name.split(" ")[0].replace(".", ""));
-					final CLPlayer clp = CLHandler.getCLPlayer(p.getUniqueId());
+					final CLPlayer clp = ChestLinkAPI.getCLPlayer(p.getUniqueId());
 					final LinkedChest lc = clp.getSingleLinkedChests().get(nr-1);
 					p.openInventory(Data.getInstance().getOverviewInventoryPlayer().createLinkedChestInventory(lc, is, nr));
 				}
@@ -200,7 +212,7 @@ public class PlayerListener implements Listener, Messages {
 			e.setCancelled(true);
 			if(e.getClick() == ClickType.LEFT) {
 				if(is.equals(Items.back) | is.equals(Items.delete)) {
-					final CLPlayer clp = CLHandler.getCLPlayer(p.getUniqueId());
+					final CLPlayer clp = ChestLinkAPI.getCLPlayer(p.getUniqueId());
 					if(is.equals(Items.back)) {
 						p.openInventory(Data.getInstance().getOverviewInventoryPlayer().createInventoryForPlayer(clp, 1));
 						return;
@@ -219,17 +231,16 @@ public class PlayerListener implements Listener, Messages {
 					if(is.equals(Items.denyField)) {
 						return;
 					}
-					final CLPlayer clp = CLHandler.getCLPlayer(p.getUniqueId());
 					final ItemStack chest = e.getClickedInventory().getItem(13);
 					final List<String> lore = chest.getItemMeta().getLore();
 					final String[] strArray = lore.get(lore.size()-1).split(":");
 					final String id = strArray[strArray.length-1].replaceAll(" §a", "");
-					final LinkedChest lc = CLHandler.getLinkedChestByID(id);
+					final LinkedChest lc = ChestLinkAPI.getLinkedChestByID(id);
 					if(lc.getLinkedChestInventory().hasContent()) {
 						p.sendMessage(prefix + "§cDu kannst die Verlinkung nicht aufheben, solange sich noch Items in der LinkedChest befinden.");
 						return;
 					}
-					CLHandler.removeLinkedChest(clp, lc);
+					ChestLinkAPI.removeLinkedChest(lc);
 					p.sendMessage(prefix + "Du hast erfolgreich die Verlinkung aufgehoben.");
 				}
 			}
